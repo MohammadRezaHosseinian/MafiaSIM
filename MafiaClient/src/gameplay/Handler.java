@@ -14,13 +14,17 @@ import java.net.Socket;
  * @author mohammadreza
  */
 public class Handler {
+
 	private Player player;
 	private Socket connection;
-	private DataInputStream  input;
-    private DataOutputStream out;
+	private DataInputStream input;
+	private DataOutputStream out;
 	private String username;
-	public Handler(String host, int port, String username){
-		this.connection = ConnectionHandler.createConnection(host, port, username);
+
+	public Handler(String host, int port, String username) {
+		Config config = Config.createConnection(host, port, username);
+		this.connection = config.getConnection();
+		this.username = config.getUsername();
 	}
-	
+
 }

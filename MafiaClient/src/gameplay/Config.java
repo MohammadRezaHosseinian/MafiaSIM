@@ -15,9 +15,25 @@ import java.util.Scanner;
  *
  * @author mohammadreza
  */
-public class ConnectionHandler {
+public class Config {
+	private final String username;
+	private final Socket connection;
+	
+	public Config(String username , Socket s){
+		this.connection = s;
+		this.username = username;
+	}
 
-	public static Socket createConnection(String host, int ip, String username) {
+	public String getUsername() {
+		return username;
+	}
+
+	public Socket getConnection() {
+		return connection;
+	}
+	
+	
+	public static Config createConnection(String host, int ip, String username) {
 		try {
 			System.out.println("[+] Connecting to server, please wait ...");
 			Socket socket = new Socket(host, ip);
@@ -38,7 +54,7 @@ public class ConnectionHandler {
 				System.out.println("[!] please insert another username:");
 				username = scanner.next();
 			}
-			return socket;
+			return new Config(username, socket);
 		} catch (IOException ex) {
 			System.out.println("[-] Connection failed!");
 		}
