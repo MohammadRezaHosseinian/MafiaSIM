@@ -17,4 +17,5 @@ public class Constants {
 	public static final String ROUTE_LIST_ROOMS = "room-list";
 	public static final String ROUTE_CREATE_ROOM = "create-room";
 	public static final String ROUTE_JOIN_ROOM = "join-room";
+	public static final String ROUTE_READY_PALYER = "ready";
 }

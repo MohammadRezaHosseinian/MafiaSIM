@@ -5,10 +5,12 @@
  */
 package mafiaserver;
 
+import gameplay.Room;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,16 +23,26 @@ public class ClientHandler implements Runnable {
 	private final Socket connection;
 	private DataOutputStream dos;
 	private DataInputStream dis;
+	private ArrayList<Room> rooms;
 
 	public ClientHandler(Socket connection) {
 		this.connection = connection;
-
+		this.rooms = new ArrayList<>();
 		try {
 			dos = new DataOutputStream(this.connection.getOutputStream());
 			dis = new DataInputStream(this.connection.getInputStream());
 		} catch (IOException ex) {
 			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+
+	private Room getRoom(String roomName) {
+		for (Room room : rooms) {
+			if (room.getName().equals(roomName)) {
+				return room;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -64,16 +76,15 @@ public class ClientHandler implements Runnable {
 				}
 				break;
 			case 2:
+
 				break;
 			case 3:
-				username = spliteReq[0];
-				roomname = spliteReq[1];
-				cmd = spliteReq[2];
-				if (cmd.equals(Constants.ROUTE_CREATE_ROOM)) {
-					this.createRoomCmd(roomname);
-				}
-				if (cmd.equals(Constants.ROUTE_JOIN_ROOM)) {
-					this.joinRoomCmd(username, roomname);
+				if (spliteReq[0].equals(Constants.ROUTE_CREATE_ROOM)) {
+					this.createRoomCmd(spliteReq[1], spliteReq[2]);
+				} else {
+					roomname = spliteReq[0];
+					Room room = this.getRoom(roomname);
+					room.handleReq(this.dos, spliteReq[1], spliteReq[2]);
 				}
 				break;
 			default:
@@ -82,19 +93,23 @@ public class ClientHandler implements Runnable {
 
 	}
 
-	private void createRoomCmd(String roomname) {
+	private void createRoomCmd(String roomname, String roomSize) {
 		System.out.println("Create Room : " + roomname);
+		int playersCount;
+		try {
+			playersCount = Integer.parseInt(roomSize);
+		} catch (NumberFormatException e) {
+			System.out.format("[-] Oops , can't parse %s as int", roomSize);
+			return;
+		}
+
+		Room room = new Room(roomname, playersCount);
+		this.rooms.add(room);
+		new Thread(room).start();
 		Utils.addRoom(roomname);
 	}
 
-	private void joinRoomCmd(String username, String roomname) {
-		boolean condition = Utils.addUser(username);
-		if (condition) {
-			System.out.format("[+] join %s  to %s\n", username, roomname);
-		} else {
-			System.out.format("[-] %s can not join\n", username);
-		}
-	}
+	
 
 	private void roomListCmd() {
 		System.out.println("[+] rooms list cmd func: ");

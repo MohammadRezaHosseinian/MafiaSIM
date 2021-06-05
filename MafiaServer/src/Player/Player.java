@@ -5,6 +5,7 @@
  */
 package Player;
 
+import java.io.DataOutputStream;
 import rolling.Roll;
 
 /**
@@ -18,12 +19,24 @@ public class Player {
 	private boolean isAlive;
 	private boolean canSpeak;
 	private Roll roll;
-
-	public Player(String username, int chairNumber) {
+	private boolean isReady;
+	private final DataOutputStream dos;
+	
+	public Player(String username, int chairNumber, DataOutputStream dos) {
 		this.username = username;
 		this.chairNumber = chairNumber;
 		this.isAlive = true;
 		this.canSpeak = false;
+		this.isReady = false;
+		this.dos = dos;
+	}
+
+	public void setIsReady(boolean isReady) {
+		this.isReady = isReady;
+	}
+
+	public boolean getIsReady() {
+		return isReady;
 	}
 
 	public String getUsername() {
@@ -46,7 +59,7 @@ public class Player {
 		this.roll = roll;
 	}
 
-	public boolean isIsAlive() {
+	public boolean getIsAlive() {
 		return isAlive;
 	}
 
@@ -61,6 +74,10 @@ public class Player {
 	public void kill() {
 		this.isAlive = false;
 		this.canSpeak = false;
+	}
+	
+	public DataOutputStream getStream(){
+		return this.dos;
 	}
 
 }
