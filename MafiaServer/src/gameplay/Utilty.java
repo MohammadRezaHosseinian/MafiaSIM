@@ -3,18 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rolling;
+package gameplay;
 
 /**
  *
  * @author mohammadreza
  */
-public class Roll {
-
-	private final String rollName;
-
-	public Roll(String name) {
-		this.rollName = name;
-	}
-
+public class Utilty {
+	
 }

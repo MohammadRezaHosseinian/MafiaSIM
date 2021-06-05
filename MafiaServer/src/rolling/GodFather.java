@@ -9,12 +9,10 @@ package rolling;
  *
  * @author mohammadreza
  */
-public class Roll {
-
-	private final String rollName;
-
-	public Roll(String name) {
-		this.rollName = name;
+public class GodFather extends Mafia{
+	
+	public GodFather(String name) {
+		super(name);
 	}
-
+	
 }

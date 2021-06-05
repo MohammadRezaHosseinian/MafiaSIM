@@ -9,12 +9,12 @@ package rolling;
  *
  * @author mohammadreza
  */
-public class Roll {
-
-	private final String rollName;
-
-	public Roll(String name) {
-		this.rollName = name;
+public class Doctor  extends Citizen{
+	
+	public Doctor(String name) {
+		super(name);
 	}
-
+	
+	
+	
 }

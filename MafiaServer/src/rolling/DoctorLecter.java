@@ -9,12 +9,10 @@ package rolling;
  *
  * @author mohammadreza
  */
-public class Roll {
+public class DoctorLecter extends Mafia {
 
-	private final String rollName;
-
-	public Roll(String name) {
-		this.rollName = name;
+	public DoctorLecter(String name) {
+		super(name);
 	}
 
 }
