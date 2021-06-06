@@ -21,13 +21,15 @@ public class Player {
 	private Roll roll;
 	private boolean isReady;
 	private final DataOutputStream dos;
-	
+	private boolean canVote;
+
 	public Player(String username, int chairNumber, DataOutputStream dos) {
 		this.username = username;
 		this.chairNumber = chairNumber;
 		this.isAlive = true;
 		this.canSpeak = false;
 		this.isReady = false;
+		this.canVote = false;
 		this.dos = dos;
 	}
 
@@ -74,10 +76,18 @@ public class Player {
 	public void kill() {
 		this.isAlive = false;
 		this.canSpeak = false;
+		this.canVote = false;
 	}
-	
-	public DataOutputStream getStream(){
+
+	public DataOutputStream getStream() {
 		return this.dos;
 	}
 
+	public void setCanVote(boolean canVote) {
+		this.canVote = canVote;
+	}
+
+	public boolean getCanVote() {
+		return this.canVote;
+	}
 }

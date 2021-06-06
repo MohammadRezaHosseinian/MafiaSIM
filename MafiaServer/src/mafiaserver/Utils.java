@@ -23,7 +23,7 @@ public class Utils {
 
 	public static boolean addUser(String newUser) {
 		try {
-			BufferedReader userBufferedReader = new BufferedReader(new FileReader(Constants.userFilePath));
+			BufferedReader userBufferedReader = new BufferedReader(new FileReader(Constants.USER_FILE_PATH));
 			String userline = userBufferedReader.readLine();
 
 			while (userline != null) {
@@ -34,7 +34,7 @@ public class Utils {
 				userline = userBufferedReader.readLine();
 
 			}
-			FileWriter userFileWriter = new FileWriter(Constants.userFilePath, true);
+			FileWriter userFileWriter = new FileWriter(Constants.USER_FILE_PATH, true);
 			userFileWriter.write(newUser + "\n");
 			userFileWriter.close();
 			System.out.println("[+] User :" + newUser + " added");
@@ -43,7 +43,7 @@ public class Utils {
 		}
 		catch (FileNotFoundException ex){
 			try {
-				FileWriter userFileWriter = new FileWriter(Constants.userFilePath, true);
+				FileWriter userFileWriter = new FileWriter(Constants.USER_FILE_PATH, true);
 				userFileWriter.close();
 				Utils.addUser(newUser);
 			} catch (IOException ex1) {
@@ -59,7 +59,7 @@ public class Utils {
 	public static void addRoom(String newRoom) {
 
 		try {
-			FileWriter fw = new FileWriter(Constants.roomFilePath, true);
+			FileWriter fw = new FileWriter(Constants.ROOM_FILE_PATH, true);
 			fw.write(newRoom + "\n");
 			fw.close();
 		} catch (IOException ex) {
@@ -69,7 +69,7 @@ public class Utils {
 
 	public static String listRoom() {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(Constants.roomFilePath));
+			BufferedReader br = new BufferedReader(new FileReader(Constants.ROOM_FILE_PATH));
 			String line = br.readLine();
 			StringBuilder sb = new StringBuilder();
 			while (line != null) {
@@ -89,7 +89,7 @@ public class Utils {
 
 	public static String listUser() {
 		try {
-			BufferedReader userBufferedReader = new BufferedReader(new FileReader(Constants.userFilePath));
+			BufferedReader userBufferedReader = new BufferedReader(new FileReader(Constants.USER_FILE_PATH));
 			String userline = userBufferedReader.readLine();
 			StringBuilder usStringBuilder = new StringBuilder();
 			while (userline != null) {
@@ -101,7 +101,7 @@ public class Utils {
 			return usStringBuilder.toString();
 		} catch (FileNotFoundException ex){
 			try {
-				FileWriter userFileWriter = new FileWriter(Constants.userFilePath, true);
+				FileWriter userFileWriter = new FileWriter(Constants.USER_FILE_PATH, true);
 				userFileWriter.close();
 				Utils.listUser();
 			} catch (IOException ex1) {

@@ -2,3 +2,4 @@ myroom
 newroom
 room1
 room2
+some-room
