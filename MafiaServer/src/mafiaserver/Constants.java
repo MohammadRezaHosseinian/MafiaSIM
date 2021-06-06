@@ -51,5 +51,14 @@ public class Constants {
 	public static final String MSG_PROFESSIONAL_SLEEP = "[+] Professional sleep";
 	public static final String MSG_DIEHARD_SLEEP = "[+] DieHard sleep";
 	public static final String MSG_DOCTOR_SLEEP = "[+] Doctor sleep";
+	public static final String MSG_JOINED_SUCCESSFULLY = "[+] You joined to %s successfully";
+	public static final String ROUTE_CHAT = "chat";
+	public static final String ROUTE_VOTE = "vote";
+	public static final String MSG_CITIZENS_WIN = "[+] Citizen win";
+	public static final String MSG_MAFIA_WIN = "[+] Mafi  win";
+	public static final String MSG_CANT_VOTE = "[-] you can't vote at the moment!!!";
+	public static final String MSG_PLAYER_IS_NOT_MAFIA = "[+] Player is not mafia";
+	public static final String MSG_PLAYER_IS_MAFIA = "[+] Player is mafia";
+	public static final String MSG_YOU_CANT_SHOOT = "[-] Player with user name %s can shoot and you can't shoot";
 
 }

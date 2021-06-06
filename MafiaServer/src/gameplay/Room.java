@@ -17,6 +17,7 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mafiaserver.Constants;
+import rolling.Citizen;
 import rolling.Detective;
 import rolling.DieHard;
 import rolling.Doctor;
@@ -40,6 +41,7 @@ public class Room implements Runnable {
 	private boolean firstNight;
 	private ArrayList<Player> killNight;
 	private Player mutPlayer;
+	private boolean isDay;
 	private HashMap<Player, Integer> vottingSystem;
 
 	public Room(String name, int playersCount) {
@@ -74,12 +76,27 @@ public class Room implements Runnable {
 		}
 		Player p = new Player(username, this.players.size(), dos);
 		this.players.add(p);
+		try {
+			p.getStream().writeUTF(String.format(Constants.MSG_JOINED_SUCCESSFULLY, this.name));
+		} catch (IOException ex) {
+			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+		}
 		return true;
 	}
 
 	private Player getPlayer(String username) {
 		for (Player player : players) {
 			if (player.getUsername().equals(username)) {
+				return player;
+			}
+		}
+		System.out.println("[-] invalid username");
+		return null;
+	}
+
+	private Player getPlayer(int chairNumber) {
+		for (Player player : players) {
+			if (player.getChairNumber() == chairNumber) {
 				return player;
 			}
 		}
@@ -103,16 +120,76 @@ public class Room implements Runnable {
 			case Constants.ROUTE_READY_PALYER:
 				Player p = getPlayer(arg);
 				p.setIsReady(true);
-				this.allPlayersReady();
+				this.checkAllPlayersReady();
 				break;
+
 		}
 	}
 
 	public void handleReq(String cmd, String arg1, String arg2) {
 
+		switch (cmd) {
+			case Constants.ROUTE_CHAT:
+				Player p = this.getPlayer(arg1);
+				if (p == null) {
+					break;
+				}
+				if (this.isDay && p.isCanSpeak()) {
+
+					this.broadcastMessage(arg1 + " : " + arg2 + "\n");
+				} else if (p.isCanSpeak()) {
+					this.mafiaBroadcast(arg1 + " : " + arg2 + "\n");
+				}
+				break;
+			case Constants.ROUTE_VOTE:
+				Player player = this.getPlayer(arg1);
+				if (player == null) {
+					break;
+				}
+				if (!player.getCanVote()) {
+					try {
+						player.getStream().writeUTF(Constants.MSG_CANT_VOTE);
+					} catch (IOException ex) {
+						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+				int chairNumber = Integer.parseInt(arg2);
+				Player votedPlayer = this.getPlayer(chairNumber);
+				if (!votedPlayer.getIsAlive()) {
+					break;
+				}
+				if (this.isDay) {
+					if (votedPlayer != null) {
+						int oldVoteCount = this.vottingSystem.get(votedPlayer);
+						this.vottingSystem.put(votedPlayer, oldVoteCount + 1);
+					}
+					break;
+				}
+				if (player.getRoll() instanceof Doctor) {
+					this.doctorVoteNight(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof Detective) {
+					this.detectiveVoteNight(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof Psychologist) {
+					this.psychologistVoteNight(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof Professional) {
+					this.professionalVoteNight(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof Mafia) {
+					this.mafiaVoteNight(player, votedPlayer);
+					break;
+				}
+				break;
+		}
 	}
 
-	private boolean allPlayersReady() {
+	private boolean checkAllPlayersReady() {
 		for (Player player : players) {
 			if (!player.getIsReady()) {
 				return false;
@@ -148,14 +225,17 @@ public class Room implements Runnable {
 
 			this.dayPhase();
 			this.votePhase();
+			this.mutPlayer = null;
 			this.nightPhase();
 			this.firstNight = false;
 			this.checkNightKills();
+			this.checkGameIsOver();
 		}
-		this.checkWinner();
+
 	}
 
 	private void dayPhase() {
+		this.isDay = true;
 		Timer timer;
 		TimerTask task = new TimerTask() {
 			@Override
@@ -171,6 +251,7 @@ public class Room implements Runnable {
 	}
 
 	private void nightPhase() {
+		this.isDay = false;
 		this.broadcastMessage(Constants.MSG_BEGING_OF_NIGHT);
 		this.mafiaNightPhase();
 		this.doctorNightPhase();
@@ -181,15 +262,14 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_END_OF_NIGHT);
 	}
 
-	private void checkWinner() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
 	private void setCanSpeekPlayers(boolean canSpeek) {
 		for (Player player : players) {
 			if (player.getIsAlive()) {
 				player.setCanSpeak(canSpeek);
 			}
+		}
+		if (this.mutPlayer != null && this.mutPlayer.getIsAlive()) {
+			mutPlayer.setCanSpeak(false);
 		}
 	}
 
@@ -408,7 +488,7 @@ public class Room implements Runnable {
 			player.kill();
 			this.broadcastMessage(String.format("[!!] Last night, the player with username: %s and chair number: killed", player.getUsername(), player.getChairNumber()));
 		}
-		
+
 		this.killNight.clear();
 	}
 
@@ -489,4 +569,108 @@ public class Room implements Runnable {
 		return null;
 	}
 
+	private void checkGameIsOver() {
+		ArrayList<Player> mafiaAliveTeam = new ArrayList();
+		ArrayList<Player> citizenAliveTeam = new ArrayList();
+		for (Player player : this.players) {
+			if (player.getIsAlive()) {
+				if (player.getRoll() instanceof Mafia) {
+					mafiaAliveTeam.add(player);
+				} else {
+					citizenAliveTeam.add(player);
+				}
+			}
+		}
+		if (mafiaAliveTeam.size() == 0) {
+			this.gameIsOver = true;
+			this.broadcastMessage(Constants.MSG_CITIZENS_WIN);
+			return;
+		}
+		if (mafiaAliveTeam.size() >= citizenAliveTeam.size()) {
+			this.gameIsOver = true;
+			this.broadcastMessage(Constants.MSG_MAFIA_WIN);
+			return;
+		}
+
+	}
+
+	private void doctorVoteNight(Player votedPlayer) {
+		Player tmp;
+		for (int i = 0; i < this.killNight.size(); i++) {
+			tmp = this.killNight.get(i);
+			if (tmp.equals(votedPlayer)) {
+				killNight.remove(tmp);
+			}
+		}
+	}
+
+	private void detectiveVoteNight(Player votedPlayer) {
+		if (votedPlayer.getRoll() instanceof GodFather) {
+			try {
+				this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
+				return;
+			} catch (IOException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			if (votedPlayer.getRoll() instanceof Citizen) {
+				try {
+					this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
+				} catch (IOException ex) {
+					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				}
+				if (votedPlayer.getRoll() instanceof Mafia) {
+					try {
+						this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_MAFIA);
+					} catch (IOException ex) {
+						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+			}
+		}
+	}
+
+	private void psychologistVoteNight(Player votedPlayer) {
+		this.mutPlayer = votedPlayer;
+	}
+
+	private void professionalVoteNight(Player votedPlayer) {
+		if (votedPlayer.getRoll() instanceof GodFather) {
+			return;
+		}
+		if (votedPlayer.getRoll() instanceof Mafia) {
+			this.killNight.add(votedPlayer);
+			return;
+		}
+		this.killNight.add(getProfessional());
+	}
+
+	private void mafiaVoteNight(Player mafiaPlayer, Player votedPlayer) {
+		try {
+			Player shooter = this.getMafiaShooter();
+			if (mafiaPlayer.equals(shooter)) {
+				this.killNight.add(votedPlayer);
+				return;
+			}
+			mafiaPlayer.getStream().writeUTF(String.format(Constants.MSG_YOU_CANT_SHOOT, shooter.getUsername()));
+		} catch (IOException ex) {
+			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private Player getMafiaShooter() {
+		Player godFather = this.getGodFather();
+		Player doctorLecter = this.getDoctorLecter();
+		if (godFather.getIsAlive()) {
+			return godFather;
+		}
+		if (doctorLecter.getIsAlive()) {
+			return doctorLecter;
+		}
+		for (Player player : players) {
+			if (player.getIsAlive() && player.getRoll() instanceof Mafia) {
+				return player;
+			}
+		}
+		return null;
+	}
 }
