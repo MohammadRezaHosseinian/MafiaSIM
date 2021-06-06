@@ -17,6 +17,9 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mafiaserver.Constants;
+import rolling.DoctorLecter;
+import rolling.GodFather;
+import rolling.Mafia;
 
 /**
  *
@@ -259,6 +262,7 @@ public class Room implements Runnable {
 		timer.schedule(task, Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
 		this.setMafiaCanVote(false);
 		this.setMafiaCanSpeek(false);
+		this.broadcastMessage(Constants.MSG_MAFIA_END_NIGHT);
 	}
 
 	private void doctorNightPhase() {
@@ -282,20 +286,74 @@ public class Room implements Runnable {
 	}
 
 	private void introduceMafia() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		Player godFather = this.getGodFather();
+		Player doctorLecter = this.getDoctorLecter();
+		StringBuilder msg = new StringBuilder();
+		if (godFather != null) {
+			msg.append(String.format("the player with username: %s and chair number: %d is god father\n", godFather.getUsername(), godFather.getChairNumber()));
+		}
+		if (doctorLecter != null) {
+			msg.append(String.format("the player with username: %s and chair number: %d is doctor lecter\n", doctorLecter.getUsername(), doctorLecter.getChairNumber()));
+		}
+		for (Player player : players) {
+			if (player.getRoll() instanceof Mafia) {
+				msg.append(String.format("the player with username: %s and chair number: %d is mafia", player.getUsername(), player.getChairNumber()));
+			}
+		}
+		this.mafiaBroadcast(msg.toString());
 	}
 
 	private void setMafiaCanSpeek(boolean b) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		for (Player player : players) {
+			if (player.getRoll() instanceof Mafia) {
+				player.setCanSpeak(b);
+			}
+		}
 	}
 
 	private void setMafiaCanVote(boolean b) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		for (Player player : players) {
+			if (player.getRoll() instanceof Mafia) {
+				player.setCanVote(b);
+			}
+		}
 	}
 
 	private void checkNightKills() {
 
 		this.killNight.clear();
+	}
+
+	private Player getGodFather() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof GodFather) {
+				return player;
+			}
+		}
+		this.mafiaBroadcast(Constants.MSG_NO_GODFATHER_IN_GAME);
+		return null;
+	}
+
+	private Player getDoctorLecter() {
+		for (Player player : players) {
+			if(player.getRoll() instanceof DoctorLecter){
+				return player;
+			}
+		}
+		this.mafiaBroadcast(Constants.MSG_NO_DOCTOR_LECTER_IN_GAME);
+		return null;
+	}
+
+	private void mafiaBroadcast(String msg) {
+		for (Player player : players) {
+			if (player.getRoll() instanceof Mafia) {
+				try {
+					player.getStream().writeUTF(msg);
+				} catch (IOException ex) {
+					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				}
+			}
+		}
 	}
 
 }

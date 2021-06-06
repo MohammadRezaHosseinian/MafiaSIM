@@ -22,25 +22,27 @@ public class Constants {
 	public static final int VOTING_TIME = 1;
 	public static final String MSG_BEGINING_OF_DAY = "[+] Ok, day began, all alive players can speek "
 			+ DAY_TIME + " min";
-	public static String MSG_END_OF_DAY = "[+] Day finished ";
-	public static String MSG_BEGINING_OF_VOTING = "[+] Start pre-trial voting for" + VOTING_TIME
+	public static final String MSG_END_OF_DAY = "[+] Day finished ";
+	public static final String MSG_BEGINING_OF_VOTING = "[+] Start pre-trial voting for" + VOTING_TIME
 			+ "[!] please highlighting own vote \n ";
 	public static int MIN_TO_MILISECOND = 60 * 1000;
-	public static String MSG_END_OF_VOTING = "[+] End of preVoting";
-	public static String MSG_WHITOUT_KILL_IN_VOTTING = "At this stage, she leaves the game";
-	public static String MSG_BEGING_OF_NIGHT = "[+] Night began, all alive player must be sleep";
-	public static String MSG_END_OF_NIGHT = "[+] Night finished";
-	public static String MSG_GOD_FATHER_WAKEUP = "[!] GodFather wakeup";
-	public static String MSG_DOCTOR_LECTER_WAKEUP = "[!] DoctorLecter wakeup";
-	public static String MSG_SIMPLE_MAFIA_WAKEUP = "[!] SimpleMafia wakeup";
-	public static String MSG_DOCTOR_WAKEUP = "[!] Doctor wakeup";
-	public static String MSG_DIEHARD_WAKEUP = "[!] DieHard wakeup";
-	public static String MSG_DETECTIVE_WAKEUP = "[!] Detective wakeup";
-	public static String MSG_MAYOR_WAKEUP = "[!] Mayor wakeup";
-	public static String MSG_PERFESSIONAL_WAKEUP = "[!] Ferfessional wakeup";
-	public static String MSG_PSYCHOLOGIST_WAKEUP = "[!] Psychologist wakeup";
-	public static int MAFIA_TURN_TIME = 1;
-	public static String MSG_MAFIA_NIGHT_PHASE = "[+] Mafia players have " + MAFIA_TURN_TIME + " minute to select victim";
-	public static String MSG_MAFIA_END_NIGHT = "[+] Mafia team sleap ";
+	public static final String MSG_END_OF_VOTING = "[+] End of preVoting";
+	public static final String MSG_WHITOUT_KILL_IN_VOTTING = "At this stage, she leaves the game";
+	public static final String MSG_BEGING_OF_NIGHT = "[+] Night began, all alive player must be sleep";
+	public static final String MSG_END_OF_NIGHT = "[+] Night finished";
+	public static final String MSG_GOD_FATHER_WAKEUP = "[!] GodFather wakeup";
+	public static final String MSG_DOCTOR_LECTER_WAKEUP = "[!] DoctorLecter wakeup";
+	public static final String MSG_SIMPLE_MAFIA_WAKEUP = "[!] SimpleMafia wakeup";
+	public static final String MSG_DOCTOR_WAKEUP = "[!] Doctor wakeup";
+	public static final String MSG_DIEHARD_WAKEUP = "[!] DieHard wakeup";
+	public static final String MSG_DETECTIVE_WAKEUP = "[!] Detective wakeup";
+	public static final String MSG_MAYOR_WAKEUP = "[!] Mayor wakeup";
+	public static final String MSG_PERFESSIONAL_WAKEUP = "[!] Ferfessional wakeup";
+	public static final String MSG_PSYCHOLOGIST_WAKEUP = "[!] Psychologist wakeup";
+	public static final int MAFIA_TURN_TIME = 1;
+	public static final String MSG_MAFIA_NIGHT_PHASE = "[+] Mafia players have " + MAFIA_TURN_TIME + " minute to select victim";
+	public static final String MSG_MAFIA_END_NIGHT = "[+] Mafia team sleap ";
+	public static final String MSG_NO_GODFATHER_IN_GAME = "[-] No god father in game";
+	public static final String MSG_NO_DOCTOR_LECTER_IN_GAME = "[-] No doctor lecter in game";
 
 }
