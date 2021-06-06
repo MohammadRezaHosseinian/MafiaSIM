@@ -9,7 +9,9 @@ import Player.Player;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -21,35 +23,39 @@ import mafiaserver.Constants;
  * @author mohammadreza
  */
 public class Room implements Runnable {
-	
+
 	private final String name;
 	private final int playersCount;
 	private final ArrayList<Player> players;
 	private boolean gameIsStart;
 	private boolean gameIsOver;
-	private HashMap<Player,Integer> vottingSystem;
-	
+	private boolean firstNight;
+	private ArrayList<Player> killNight;
+	private HashMap<Player, Integer> vottingSystem;
+
 	public Room(String name, int playersCount) {
 		this.name = name;
 		this.playersCount = playersCount;
 		this.players = new ArrayList<>(playersCount);
 		this.gameIsStart = false;
 		this.gameIsOver = false;
+		this.firstNight = true;
+		this.killNight = new ArrayList<>();
 		this.vottingSystem = new HashMap<>();
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public int getPlayersCount() {
 		return playersCount;
 	}
-	
+
 	public ArrayList<Player> getPlayers() {
 		return players;
 	}
-	
+
 	public boolean addPlayer(String username, DataOutputStream dos) {
 		for (Player player : players) {
 			if (player.getUsername().equals(username)) {
@@ -61,7 +67,7 @@ public class Room implements Runnable {
 		this.players.add(p);
 		return true;
 	}
-	
+
 	private Player getPlayer(String username) {
 		for (Player player : players) {
 			if (player.getUsername().equals(username)) {
@@ -71,15 +77,15 @@ public class Room implements Runnable {
 		System.out.println("[-] invalid username");
 		return null;
 	}
-	
+
 	public boolean isRoomFull() {
 		return this.players.size() == this.playersCount;
 	}
-	
+
 	public void shuffliseRoll() {
-		
+
 	}
-	
+
 	public void handleReq(DataOutputStream dos, String cmd, String arg) {
 		switch (cmd) {
 			case Constants.ROUTE_JOIN_ROOM:
@@ -92,11 +98,11 @@ public class Room implements Runnable {
 				break;
 		}
 	}
-	
+
 	public void handleReq(String cmd, String arg1, String arg2) {
-		
+
 	}
-	
+
 	private boolean allPlayersReady() {
 		for (Player player : players) {
 			if (!player.getIsReady()) {
@@ -106,7 +112,7 @@ public class Room implements Runnable {
 		this.gameIsStart = true;
 		return true;
 	}
-	
+
 	private void broadcastMessage(String msg) {
 		for (Player player : players) {
 			if (player.getIsAlive()) {
@@ -118,7 +124,7 @@ public class Room implements Runnable {
 			}
 		}
 	}
-	
+
 	@Override
 	public void run() {
 		while (!this.gameIsStart || players.size() != playersCount) {
@@ -130,13 +136,16 @@ public class Room implements Runnable {
 			}
 		}
 		while (!this.gameIsOver) {
+
 			this.dayPhase();
 			this.votePhase();
 			this.nightPhase();
+			this.firstNight = false;
+			this.checkNightKills();
 		}
 		this.checkWinner();
 	}
-	
+
 	private void dayPhase() {
 		Timer timer;
 		TimerTask task = new TimerTask() {
@@ -151,17 +160,22 @@ public class Room implements Runnable {
 		setCanSpeekPlayers(false);
 		this.broadcastMessage(Constants.MSG_END_OF_DAY);
 	}
-	
-	
-	
+
 	private void nightPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_BEGING_OF_NIGHT);
+		this.mafiaNightPhase();
+		this.doctorNightPhase();
+		this.dieHardNighPhase();
+		this.professionalNightPhase();
+		this.detectiveNightPhase();
+		this.psychologistNightPhase();
+		this.broadcastMessage(Constants.MSG_END_OF_NIGHT);
 	}
-	
+
 	private void checkWinner() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
-	
+
 	private void setCanSpeekPlayers(boolean canSpeek) {
 		for (Player player : players) {
 			if (player.getIsAlive()) {
@@ -169,7 +183,7 @@ public class Room implements Runnable {
 			}
 		}
 	}
-	
+
 	private void votePhase() {
 		TimerTask task = new TimerTask() {
 			@Override
@@ -181,9 +195,12 @@ public class Room implements Runnable {
 		Timer timer = new Timer("Timer Voting");
 		timer.schedule(task, Constants.VOTING_TIME * Constants.MIN_TO_MILISECOND);
 		this.broadcastMessage(Constants.MSG_END_OF_VOTING);
-		
+		this.killByVoting();
+		this.vottingSystem.clear();
+		this.setPlayerCanVote(false);
+
 	}
-	
+
 	private void setPlayerCanVote(boolean canVote) {
 		for (Player player : players) {
 			if (player.getIsAlive()) {
@@ -191,4 +208,94 @@ public class Room implements Runnable {
 			}
 		}
 	}
+
+	private void killByVoting() {
+		List<Integer> sortedVotes = new ArrayList<>(vottingSystem.values());
+		Collections.sort(sortedVotes);
+		int quorum = (int) 0.3 * this.alivePlayersCount();
+		int maxVote = sortedVotes.get(sortedVotes.size() - 1);
+		if (maxVote != sortedVotes.get(sortedVotes.size() - 2)) {
+			if (maxVote >= quorum) {
+				for (Player player : vottingSystem.keySet()) {
+					if (vottingSystem.get(player) == maxVote) {
+						player.kill();
+						this.broadcastMessage("At this stage,"
+								+ player.getUsername() + " leaves the game");
+						return;
+					}
+				}
+			}
+		}
+		this.broadcastMessage(Constants.MSG_WHITOUT_KILL_IN_VOTTING);
+	}
+
+	private int alivePlayersCount() {
+		int count = 0;
+		for (Player player : players) {
+			if (player.getIsAlive()) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	private void mafiaNightPhase() {
+		this.broadcastMessage(Constants.MSG_GOD_FATHER_WAKEUP);
+		this.broadcastMessage(Constants.MSG_DOCTOR_LECTER_WAKEUP);
+		this.broadcastMessage(Constants.MSG_SIMPLE_MAFIA_WAKEUP);
+		this.setMafiaCanSpeek(true);
+		if (this.firstNight) {
+			this.introduceMafia();
+			return;
+		}
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				broadcastMessage(Constants.MSG_MAFIA_NIGHT_PHASE);
+				setMafiaCanVote(true);
+			}
+		};
+		Timer timer = new Timer("MafiaNight");
+		timer.schedule(task, Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
+		this.setMafiaCanVote(false);
+		this.setMafiaCanSpeek(false);
+	}
+
+	private void doctorNightPhase() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void dieHardNighPhase() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void professionalNightPhase() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void detectiveNightPhase() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void psychologistNightPhase() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void introduceMafia() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void setMafiaCanSpeek(boolean b) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void setMafiaCanVote(boolean b) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	private void checkNightKills() {
+
+		this.killNight.clear();
+	}
+
 }
