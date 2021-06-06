@@ -17,9 +17,14 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mafiaserver.Constants;
+import rolling.Detective;
+import rolling.DieHard;
+import rolling.Doctor;
 import rolling.DoctorLecter;
 import rolling.GodFather;
 import rolling.Mafia;
+import rolling.Professional;
+import rolling.Psychologist;
 
 /**
  *
@@ -34,6 +39,7 @@ public class Room implements Runnable {
 	private boolean gameIsOver;
 	private boolean firstNight;
 	private ArrayList<Player> killNight;
+	private Player mutPlayer;
 	private HashMap<Player, Integer> vottingSystem;
 
 	public Room(String name, int playersCount) {
@@ -266,23 +272,101 @@ public class Room implements Runnable {
 	}
 
 	private void doctorNightPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_DOCTOR_WAKEUP);
+		Player doctor = this.getDoctor();
+		if (doctor != null) {
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					if (doctor.getIsAlive()) {
+						doctor.setCanVote(true);
+					}
+				}
+
+			};
+			Timer timer = new Timer("Doctor");
+			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			doctor.setCanVote(false);
+			this.broadcastMessage(Constants.MSG_DOCTOR_SLEEP);
+		}
 	}
 
 	private void dieHardNighPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_DIEHARD_WAKEUP);
+		Player dieHard = this.getDieHard();
+		if (dieHard != null) {
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					if (dieHard.getIsAlive()) {
+						dieHard.setCanVote(true);
+					}
+				}
+
+			};
+			Timer timer = new Timer("DieHard");
+			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			dieHard.setCanVote(false);
+			this.broadcastMessage(Constants.MSG_DIEHARD_SLEEP);
+		}
 	}
 
 	private void professionalNightPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_PROFESSIONAL_WAKEUP);
+		Player professional = this.getProfessional();
+		if (professional != null) {
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					if (professional.getIsAlive()) {
+						professional.setCanVote(true);
+					}
+				}
+			};
+			Timer timer = new Timer("peofessional");
+			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			professional.setCanVote(false);
+		}
+		this.broadcastMessage(Constants.MSG_PROFESSIONAL_SLEEP);
 	}
 
 	private void detectiveNightPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_DETECTIVE_WAKEUP);
+		Player detective = this.getDetective();
+		if (detective != null) {
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					if (detective.getIsAlive()) {
+						detective.setCanVote(true);
+					}
+				}
+			};
+			Timer timer = new Timer("Detective");
+			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			detective.setCanVote(false);
+		}
+		this.broadcastMessage(Constants.MSG_DETECTIVE_SLEEP);
 	}
 
 	private void psychologistNightPhase() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_WAKEUP);
+		Player psychologist = this.getPsychologist();
+		if (psychologist != null) {
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					if (psychologist.getIsAlive()) {
+						psychologist.setCanVote(true);
+					}
+				}
+			};
+			Timer timer = new Timer("Mute");
+			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			psychologist.setCanVote(false);
+		}
+		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_SLEEP);
+
 	}
 
 	private void introduceMafia() {
@@ -320,7 +404,11 @@ public class Room implements Runnable {
 	}
 
 	private void checkNightKills() {
-
+		for (Player player : this.killNight) {
+			player.kill();
+			this.broadcastMessage(String.format("[!!] Last night, the player with username: %s and chair number: killed", player.getUsername(), player.getChairNumber()));
+		}
+		
 		this.killNight.clear();
 	}
 
@@ -336,7 +424,7 @@ public class Room implements Runnable {
 
 	private Player getDoctorLecter() {
 		for (Player player : players) {
-			if(player.getRoll() instanceof DoctorLecter){
+			if (player.getRoll() instanceof DoctorLecter) {
 				return player;
 			}
 		}
@@ -354,6 +442,51 @@ public class Room implements Runnable {
 				}
 			}
 		}
+	}
+
+	private Player getPsychologist() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof Psychologist) {
+				return player;
+			}
+		}
+		return null;
+	}
+
+	private Player getDetective() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof Detective) {
+				return player;
+			}
+		}
+		return null;
+	}
+
+	private Player getProfessional() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof Professional) {
+				return player;
+			}
+		}
+		return null;
+	}
+
+	private Player getDieHard() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof DieHard) {
+				return player;
+			}
+		}
+		return null;
+	}
+
+	private Player getDoctor() {
+		for (Player player : players) {
+			if (player.getRoll() instanceof Doctor) {
+				return player;
+			}
+		}
+		return null;
 	}
 
 }

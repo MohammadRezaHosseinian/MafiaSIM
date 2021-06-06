@@ -37,12 +37,19 @@ public class Constants {
 	public static final String MSG_DIEHARD_WAKEUP = "[!] DieHard wakeup";
 	public static final String MSG_DETECTIVE_WAKEUP = "[!] Detective wakeup";
 	public static final String MSG_MAYOR_WAKEUP = "[!] Mayor wakeup";
-	public static final String MSG_PERFESSIONAL_WAKEUP = "[!] Ferfessional wakeup";
+	public static final String MSG_PROFESSIONAL_WAKEUP = "[!] Professional wakeup";
 	public static final String MSG_PSYCHOLOGIST_WAKEUP = "[!] Psychologist wakeup";
 	public static final int MAFIA_TURN_TIME = 1;
 	public static final String MSG_MAFIA_NIGHT_PHASE = "[+] Mafia players have " + MAFIA_TURN_TIME + " minute to select victim";
 	public static final String MSG_MAFIA_END_NIGHT = "[+] Mafia team sleap ";
 	public static final String MSG_NO_GODFATHER_IN_GAME = "[-] No god father in game";
 	public static final String MSG_NO_DOCTOR_LECTER_IN_GAME = "[-] No doctor lecter in game";
+	public static final int CITIZEN_TIME = 30;
+	public static final int SECOND_TO_MILISECOND = 1000;
+	public static final String MSG_PSYCHOLOGIST_SLEEP = "[+] Psychologist sleep";
+	public static final String MSG_DETECTIVE_SLEEP = "[+] Detective sleep";
+	public static final String MSG_PROFESSIONAL_SLEEP = "[+] Professional sleep";
+	public static final String MSG_DIEHARD_SLEEP = "[+] DieHard sleep";
+	public static final String MSG_DOCTOR_SLEEP = "[+] Doctor sleep";
 
 }
