@@ -24,6 +24,7 @@ import rolling.Doctor;
 import rolling.DoctorLecter;
 import rolling.GodFather;
 import rolling.Mafia;
+import rolling.Mayor;
 import rolling.Professional;
 import rolling.Psychologist;
 
@@ -43,6 +44,9 @@ public class Room implements Runnable {
 	private Player mutPlayer;
 	private boolean isDay;
 	private HashMap<Player, Integer> vottingSystem;
+	private GameState state;
+	private boolean mayorCanceledVotting;
+	private Player killedByVottingPlayer;
 
 	public Room(String name, int playersCount) {
 		this.name = name;
@@ -53,6 +57,7 @@ public class Room implements Runnable {
 		this.firstNight = true;
 		this.killNight = new ArrayList<>();
 		this.vottingSystem = new HashMap<>();
+		state = GameState.READY_PENDING;
 	}
 
 	public String getName() {
@@ -134,10 +139,9 @@ public class Room implements Runnable {
 				if (p == null) {
 					break;
 				}
-				if (this.isDay && p.isCanSpeak()) {
-
+				if (state == GameState.DAY_PHASE && p.isCanSpeak()) {
 					this.broadcastMessage(arg1 + " : " + arg2 + "\n");
-				} else if (p.isCanSpeak()) {
+				} else if (state == GameState.MAFIA_TEAM_NIGHT_ACT && p.isCanSpeak()) {
 					this.mafiaBroadcast(arg1 + " : " + arg2 + "\n");
 				}
 				break;
@@ -158,30 +162,46 @@ public class Room implements Runnable {
 				if (!votedPlayer.getIsAlive()) {
 					break;
 				}
-				if (this.isDay) {
+				if (state == GameState.DAY_PHASE) {
 					if (votedPlayer != null) {
 						int oldVoteCount = this.vottingSystem.get(votedPlayer);
 						this.vottingSystem.put(votedPlayer, oldVoteCount + 1);
 					}
 					break;
 				}
-				if (player.getRoll() instanceof Doctor) {
+				if (state == GameState.MAYOR_ACT && player.getRoll() instanceof Mayor) {
+					if (votedPlayer != null) {
+						this.mayorCanceledVotting = true;
+					} else {
+						this.mayorCanceledVotting = false;
+					}
+					break;
+				}
+				if (player.getRoll() instanceof Doctor && state == GameState.DOCTOR_ACT) {
 					this.doctorVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Detective) {
+				if (player.getRoll() instanceof Detective && state == GameState.DETECTIVE_ACT) {
 					this.detectiveVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Psychologist) {
+				if (player.getRoll() instanceof Psychologist && state == GameState.PSYCO_ACT) {
 					this.psychologistVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Professional) {
+				if (player.getRoll() instanceof Professional && state == GameState.PROFESSIONAL_ACT) {
 					this.professionalVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Mafia) {
+				if (player.getRoll() instanceof DieHard && state == GameState.DIE_HARD_ACT) {
+					this.dieHardAct(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof DoctorLecter && state == GameState.DOCTOR_LECTER_ACT) {
+					this.doctorLecterAct(votedPlayer);
+					break;
+				}
+				if (player.getRoll() instanceof Mafia && state == GameState.MAFIA_TEAM_NIGHT_ACT) {
 					this.mafiaVoteNight(player, votedPlayer);
 					break;
 				}
@@ -221,20 +241,21 @@ public class Room implements Runnable {
 				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
+		state = GameState.INTER_STATES_PHASE;
 		while (!this.gameIsOver) {
-
 			this.dayPhase();
 			this.votePhase();
+			this.mayorAct();
 			this.mutPlayer = null;
 			this.nightPhase();
 			this.firstNight = false;
 			this.checkNightKills();
 			this.checkGameIsOver();
 		}
-
 	}
 
 	private void dayPhase() {
+		state = GameState.DAY_PHASE;
 		this.isDay = true;
 		Timer timer;
 		TimerTask task = new TimerTask() {
@@ -248,6 +269,7 @@ public class Room implements Runnable {
 		timer.schedule(task, Constants.DAY_TIME * Constants.MIN_TO_MILISECOND);
 		setCanSpeekPlayers(false);
 		this.broadcastMessage(Constants.MSG_END_OF_DAY);
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void nightPhase() {
@@ -274,6 +296,7 @@ public class Room implements Runnable {
 	}
 
 	private void votePhase() {
+		state = GameState.VOTE_AFTER_DAY;
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
@@ -287,7 +310,7 @@ public class Room implements Runnable {
 		this.killByVoting();
 		this.vottingSystem.clear();
 		this.setPlayerCanVote(false);
-
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void setPlayerCanVote(boolean canVote) {
@@ -301,13 +324,14 @@ public class Room implements Runnable {
 	private void killByVoting() {
 		List<Integer> sortedVotes = new ArrayList<>(vottingSystem.values());
 		Collections.sort(sortedVotes);
-		int quorum = (int) 0.3 * this.alivePlayersCount();
+		int quorum = (int) 0.5 * this.alivePlayersCount();
 		int maxVote = sortedVotes.get(sortedVotes.size() - 1);
 		if (maxVote != sortedVotes.get(sortedVotes.size() - 2)) {
 			if (maxVote >= quorum) {
 				for (Player player : vottingSystem.keySet()) {
 					if (vottingSystem.get(player) == maxVote) {
 						player.kill();
+						this.killedByVottingPlayer = player;
 						this.broadcastMessage("At this stage,"
 								+ player.getUsername() + " leaves the game");
 						return;
@@ -329,6 +353,7 @@ public class Room implements Runnable {
 	}
 
 	private void mafiaNightPhase() {
+		state = GameState.MAFIA_TEAM_NIGHT_ACT;
 		this.broadcastMessage(Constants.MSG_GOD_FATHER_WAKEUP);
 		this.broadcastMessage(Constants.MSG_DOCTOR_LECTER_WAKEUP);
 		this.broadcastMessage(Constants.MSG_SIMPLE_MAFIA_WAKEUP);
@@ -349,9 +374,11 @@ public class Room implements Runnable {
 		this.setMafiaCanVote(false);
 		this.setMafiaCanSpeek(false);
 		this.broadcastMessage(Constants.MSG_MAFIA_END_NIGHT);
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void doctorNightPhase() {
+		state = GameState.DOCTOR_ACT;
 		this.broadcastMessage(Constants.MSG_DOCTOR_WAKEUP);
 		Player doctor = this.getDoctor();
 		if (doctor != null) {
@@ -368,10 +395,12 @@ public class Room implements Runnable {
 			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			doctor.setCanVote(false);
 			this.broadcastMessage(Constants.MSG_DOCTOR_SLEEP);
+			state = GameState.INTER_STATES_PHASE;
 		}
 	}
 
 	private void dieHardNighPhase() {
+		state = GameState.DIE_HARD_ACT;
 		this.broadcastMessage(Constants.MSG_DIEHARD_WAKEUP);
 		Player dieHard = this.getDieHard();
 		if (dieHard != null) {
@@ -389,9 +418,11 @@ public class Room implements Runnable {
 			dieHard.setCanVote(false);
 			this.broadcastMessage(Constants.MSG_DIEHARD_SLEEP);
 		}
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void professionalNightPhase() {
+		state = GameState.PROFESSIONAL_ACT;
 		this.broadcastMessage(Constants.MSG_PROFESSIONAL_WAKEUP);
 		Player professional = this.getProfessional();
 		if (professional != null) {
@@ -408,9 +439,11 @@ public class Room implements Runnable {
 			professional.setCanVote(false);
 		}
 		this.broadcastMessage(Constants.MSG_PROFESSIONAL_SLEEP);
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void detectiveNightPhase() {
+		state = GameState.DETECTIVE_ACT;
 		this.broadcastMessage(Constants.MSG_DETECTIVE_WAKEUP);
 		Player detective = this.getDetective();
 		if (detective != null) {
@@ -427,9 +460,11 @@ public class Room implements Runnable {
 			detective.setCanVote(false);
 		}
 		this.broadcastMessage(Constants.MSG_DETECTIVE_SLEEP);
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void psychologistNightPhase() {
+		state = GameState.PSYCO_ACT;
 		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_WAKEUP);
 		Player psychologist = this.getPsychologist();
 		if (psychologist != null) {
@@ -446,7 +481,7 @@ public class Room implements Runnable {
 			psychologist.setCanVote(false);
 		}
 		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_SLEEP);
-
+		state = GameState.INTER_STATES_PHASE;
 	}
 
 	private void introduceMafia() {
@@ -647,7 +682,7 @@ public class Room implements Runnable {
 	private void mafiaVoteNight(Player mafiaPlayer, Player votedPlayer) {
 		try {
 			Player shooter = this.getMafiaShooter();
-			if (mafiaPlayer.equals(shooter)) {
+			if (mafiaPlayer.equals(shooter) && !(votedPlayer.getRoll() instanceof DieHard)) {
 				this.killNight.add(votedPlayer);
 				return;
 			}
@@ -672,5 +707,31 @@ public class Room implements Runnable {
 			}
 		}
 		return null;
+	}
+
+	private void mayorAct() {
+		if (this.mayorCanceledVotting) {
+			this.killedByVottingPlayer.setIsAlive(true);
+		}
+		this.killedByVottingPlayer = null;
+		this.mayorCanceledVotting = false;
+	}
+
+	private void doctorLecterAct(Player votedPlayer) {
+		Player tmp;
+		for (int i = 0; i < this.killNight.size(); i++) {
+			tmp = this.killNight.get(i);
+			if (tmp.equals(votedPlayer)) {
+				if (tmp.getRoll() instanceof Mafia) {
+
+					killNight.remove(tmp);
+				}
+			}
+		}
+
+	}
+
+	private void dieHardAct(Player votedPlayer) {
+
 	}
 }
