@@ -47,6 +47,7 @@ public class Room implements Runnable {
 	private GameState state;
 	private boolean mayorCanceledVotting;
 	private Player killedByVottingPlayer;
+	private boolean dieHardInquiry;
 
 	public Room(String name, int playersCount) {
 		this.name = name;
@@ -256,6 +257,9 @@ public class Room implements Runnable {
 
 	private void dayPhase() {
 		state = GameState.DAY_PHASE;
+		if (this.dieHardInquiry) {
+			this.broadCastKillRole();
+		}
 		this.isDay = true;
 		Timer timer;
 		TimerTask task = new TimerTask() {
@@ -732,6 +736,24 @@ public class Room implements Runnable {
 	}
 
 	private void dieHardAct(Player votedPlayer) {
+		if (votedPlayer == null) {
+			this.dieHardInquiry = false;
+			return;
+		}
+		this.dieHardInquiry = true;
+	}
 
+	private void broadCastKillRole() {
+		ArrayList<Player> killedPlayers = new ArrayList<>();
+		for (Player player : players) {
+			if (!player.getIsAlive()) {
+				killedPlayers.add(player);
+			}
+		}
+		Collections.shuffle(killedPlayers);
+		for (Player killedPlayer : killedPlayers) {
+			this.broadcastMessage(killedPlayer.getRoll().toString());
+		}
+		this.dieHardInquiry = false;
 	}
 }
