@@ -90,4 +90,8 @@ public class Player {
 	public boolean getCanVote() {
 		return this.canVote;
 	}
+
+	public void setIsAlive(boolean b) {
+		this.isAlive = true;
+	}
 }
