@@ -9,10 +9,11 @@ package rolling;
  *
  * @author mohammadreza
  */
-public class Citizen extends Roll{
+public class Citizen extends Role{
 	
-	public Citizen(String name) {
-		super(name);
+	public Citizen() {
+		super();
 	}
+	
 	
 }
