@@ -11,10 +11,13 @@ package rolling;
  */
 public class Detective extends Citizen{
 	
-	public Detective(String name) {
-		super(name);
+	public Detective() {
+		super();
 	}
 	
-	
+	@Override
+	public boolean hasNightAct(){
+		return true;
+	}
 	
 }
