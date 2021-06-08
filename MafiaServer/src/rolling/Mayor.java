@@ -10,9 +10,22 @@ package rolling;
  * @author mohammadreza
  */
 public class Mayor extends Citizen{
-	
-	public Mayor(String name) {
-		super(name);
+	private int cancelVotting;
+	public Mayor(int cancelvotting) {
+		super();
+		this.cancelVotting = cancelvotting;
 	}
 	
+	@Override
+	public boolean hasAfterDayAct(){
+		return true;
+	}
+	
+	public boolean canCancelVotting(){
+		if(this.cancelVotting > 0){
+			this.cancelVotting--;
+			return true;
+		}
+		return false;
+	}
 }
