@@ -11,8 +11,12 @@ package rolling;
  */
 public class Professional extends Citizen{
 	
-	public Professional(String name) {
-		super(name);
+	public Professional() {
+		super();
 	}
 	
+	@Override
+	public boolean hasNightAct(){
+		return true;
+	}
 }
