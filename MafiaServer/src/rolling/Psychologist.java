@@ -5,14 +5,29 @@
  */
 package rolling;
 
+import Player.Player;
+
 /**
  *
  * @author mohammadreza
  */
 public class Psychologist extends Citizen {
-
-	public Psychologist(String name) {
-		super(name);
+	
+	Player lastMutedPlayer;
+	
+	public Psychologist() {
+		super();		
 	}
 
+	@Override
+	public boolean hasNightAct(){
+		return true;
+	}
+	
+	public boolean canMutePlayer(Player victim){
+		if(lastMutedPlayer.equals(victim))
+		    return false;
+		this.lastMutedPlayer = victim;
+		return true;
+	}
 }
