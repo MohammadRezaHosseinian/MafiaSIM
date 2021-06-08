@@ -11,8 +11,34 @@ package rolling;
  */
 public class DieHard extends Citizen{
 	
-	public DieHard(String name) {
-		super(name);
+	private int armorTimes;
+	private int queryTimes;
+	
+	public DieHard(int armortimes, int query) {
+		super();
+		this.armorTimes = armortimes;
+		this.queryTimes = query;
+	}
+	
+	public boolean checkCanQuery(){
+		if(queryTimes > 0){
+			this.queryTimes--;
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean checkHasArmor(){
+		if(this.armorTimes > 0){
+			this.armorTimes--;
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean hasNightAct(){
+		return true;
 	}
 	
 }
