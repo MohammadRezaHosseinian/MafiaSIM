@@ -11,8 +11,8 @@ package rolling;
  */
 public class SimpleCitizen  extends Citizen{
 	
-	public SimpleCitizen(String name) {
-		super(name);
+	public SimpleCitizen() {
+		super();
 	}
 	
 }
