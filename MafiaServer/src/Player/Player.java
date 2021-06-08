@@ -6,7 +6,7 @@
 package Player;
 
 import java.io.DataOutputStream;
-import rolling.Roll;
+import rolling.Role;
 
 /**
  *
@@ -18,7 +18,7 @@ public class Player {
 	private int chairNumber;
 	private boolean isAlive;
 	private boolean canSpeak;
-	private Roll roll;
+	private Role role;
 	private boolean isReady;
 	private final DataOutputStream dos;
 	private boolean canVote;
@@ -48,17 +48,17 @@ public class Player {
 	public int getChairNumber() {
 		return chairNumber;
 	}
-
-	public Roll getRoll() {
-		return roll;
+	
+	public Role getRole() {
+		return role;
 	}
 
 	public void setChairNumber(int chairNumber) {
 		this.chairNumber = chairNumber;
 	}
 
-	public void setRoll(Roll roll) {
-		this.roll = roll;
+	public void setRole(Role roll) {
+		this.role = roll;
 	}
 
 	public boolean getIsAlive() {

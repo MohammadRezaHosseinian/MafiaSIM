@@ -36,14 +36,14 @@ public class Room implements Runnable {
 
 	private final String name;
 	private final int playersCount;
-	private final ArrayList<Player> players;
+	private ArrayList<Player> players;
 	private boolean gameIsStart;
 	private boolean gameIsOver;
 	private boolean firstNight;
-	private ArrayList<Player> killNight;
+	private final ArrayList<Player> killNight;
 	private Player mutPlayer;
 	private boolean isDay;
-	private HashMap<Player, Integer> vottingSystem;
+	private final HashMap<Player, Integer> vottingSystem;
 	private GameState state;
 	private boolean mayorCanceledVotting;
 	private Player killedByVottingPlayer;
@@ -170,7 +170,7 @@ public class Room implements Runnable {
 					}
 					break;
 				}
-				if (state == GameState.MAYOR_ACT && player.getRoll() instanceof Mayor) {
+				if (state == GameState.MAYOR_ACT && player.getRole() instanceof Mayor) {
 					if (votedPlayer != null) {
 						this.mayorCanceledVotting = true;
 					} else {
@@ -178,31 +178,31 @@ public class Room implements Runnable {
 					}
 					break;
 				}
-				if (player.getRoll() instanceof Doctor && state == GameState.DOCTOR_ACT) {
+				if (player.getRole() instanceof Doctor && state == GameState.DOCTOR_ACT) {
 					this.doctorVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Detective && state == GameState.DETECTIVE_ACT) {
+				if (player.getRole() instanceof Detective && state == GameState.DETECTIVE_ACT) {
 					this.detectiveVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Psychologist && state == GameState.PSYCO_ACT) {
+				if (player.getRole() instanceof Psychologist && state == GameState.PSYCO_ACT) {
 					this.psychologistVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Professional && state == GameState.PROFESSIONAL_ACT) {
+				if (player.getRole() instanceof Professional && state == GameState.PROFESSIONAL_ACT) {
 					this.professionalVoteNight(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof DieHard && state == GameState.DIE_HARD_ACT) {
+				if (player.getRole() instanceof DieHard && state == GameState.DIE_HARD_ACT) {
 					this.dieHardAct(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof DoctorLecter && state == GameState.DOCTOR_LECTER_ACT) {
+				if (player.getRole() instanceof DoctorLecter && state == GameState.DOCTOR_LECTER_ACT) {
 					this.doctorLecterAct(votedPlayer);
 					break;
 				}
-				if (player.getRoll() instanceof Mafia && state == GameState.MAFIA_TEAM_NIGHT_ACT) {
+				if (player.getRole() instanceof Mafia && state == GameState.MAFIA_TEAM_NIGHT_ACT) {
 					this.mafiaVoteNight(player, votedPlayer);
 					break;
 				}
@@ -242,6 +242,7 @@ public class Room implements Runnable {
 				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
+		this.assignRoles();
 		state = GameState.INTER_STATES_PHASE;
 		while (!this.gameIsOver) {
 			this.dayPhase();
@@ -393,7 +394,6 @@ public class Room implements Runnable {
 						doctor.setCanVote(true);
 					}
 				}
-
 			};
 			Timer timer = new Timer("Doctor");
 			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
@@ -499,7 +499,7 @@ public class Room implements Runnable {
 			msg.append(String.format("the player with username: %s and chair number: %d is doctor lecter\n", doctorLecter.getUsername(), doctorLecter.getChairNumber()));
 		}
 		for (Player player : players) {
-			if (player.getRoll() instanceof Mafia) {
+			if (player.getRole() instanceof Mafia) {
 				msg.append(String.format("the player with username: %s and chair number: %d is mafia", player.getUsername(), player.getChairNumber()));
 			}
 		}
@@ -508,7 +508,7 @@ public class Room implements Runnable {
 
 	private void setMafiaCanSpeek(boolean b) {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Mafia) {
+			if (player.getRole() instanceof Mafia) {
 				player.setCanSpeak(b);
 			}
 		}
@@ -516,7 +516,7 @@ public class Room implements Runnable {
 
 	private void setMafiaCanVote(boolean b) {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Mafia) {
+			if (player.getRole() instanceof Mafia) {
 				player.setCanVote(b);
 			}
 		}
@@ -533,7 +533,7 @@ public class Room implements Runnable {
 
 	private Player getGodFather() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof GodFather) {
+			if (player.getRole() instanceof GodFather) {
 				return player;
 			}
 		}
@@ -543,7 +543,7 @@ public class Room implements Runnable {
 
 	private Player getDoctorLecter() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof DoctorLecter) {
+			if (player.getRole() instanceof DoctorLecter) {
 				return player;
 			}
 		}
@@ -553,7 +553,7 @@ public class Room implements Runnable {
 
 	private void mafiaBroadcast(String msg) {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Mafia) {
+			if (player.getRole() instanceof Mafia) {
 				try {
 					player.getStream().writeUTF(msg);
 				} catch (IOException ex) {
@@ -565,7 +565,7 @@ public class Room implements Runnable {
 
 	private Player getPsychologist() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Psychologist) {
+			if (player.getRole() instanceof Psychologist) {
 				return player;
 			}
 		}
@@ -574,7 +574,7 @@ public class Room implements Runnable {
 
 	private Player getDetective() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Detective) {
+			if (player.getRole() instanceof Detective) {
 				return player;
 			}
 		}
@@ -583,7 +583,7 @@ public class Room implements Runnable {
 
 	private Player getProfessional() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Professional) {
+			if (player.getRole() instanceof Professional) {
 				return player;
 			}
 		}
@@ -592,7 +592,7 @@ public class Room implements Runnable {
 
 	private Player getDieHard() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof DieHard) {
+			if (player.getRole() instanceof DieHard) {
 				return player;
 			}
 		}
@@ -601,7 +601,7 @@ public class Room implements Runnable {
 
 	private Player getDoctor() {
 		for (Player player : players) {
-			if (player.getRoll() instanceof Doctor) {
+			if (player.getRole() instanceof Doctor) {
 				return player;
 			}
 		}
@@ -613,7 +613,7 @@ public class Room implements Runnable {
 		ArrayList<Player> citizenAliveTeam = new ArrayList();
 		for (Player player : this.players) {
 			if (player.getIsAlive()) {
-				if (player.getRoll() instanceof Mafia) {
+				if (player.getRole() instanceof Mafia) {
 					mafiaAliveTeam.add(player);
 				} else {
 					citizenAliveTeam.add(player);
@@ -635,6 +635,13 @@ public class Room implements Runnable {
 
 	private void doctorVoteNight(Player votedPlayer) {
 		Player tmp;
+		Player doctor = this.getDoctor();
+		Doctor doctorRole = (Doctor) doctor.getRole();
+		if (votedPlayer.equals(doctor)) {
+			if (!doctorRole.checkCanSaveSelf()) {
+				return;
+			}
+		}
 		for (int i = 0; i < this.killNight.size(); i++) {
 			tmp = this.killNight.get(i);
 			if (tmp.equals(votedPlayer)) {
@@ -644,20 +651,20 @@ public class Room implements Runnable {
 	}
 
 	private void detectiveVoteNight(Player votedPlayer) {
-		if (votedPlayer.getRoll() instanceof GodFather) {
+		if (votedPlayer.getRole() instanceof GodFather) {
 			try {
 				this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				return;
 			} catch (IOException ex) {
 				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
 			}
-			if (votedPlayer.getRoll() instanceof Citizen) {
+			if (votedPlayer.getRole() instanceof Citizen) {
 				try {
 					this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				} catch (IOException ex) {
 					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
 				}
-				if (votedPlayer.getRoll() instanceof Mafia) {
+				if (votedPlayer.getRole() instanceof Mafia) {
 					try {
 						this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_MAFIA);
 					} catch (IOException ex) {
@@ -669,14 +676,17 @@ public class Room implements Runnable {
 	}
 
 	private void psychologistVoteNight(Player votedPlayer) {
-		this.mutPlayer = votedPlayer;
+		Psychologist psycoRole = (Psychologist) this.getPsychologist().getRole();
+		if (psycoRole.canMutePlayer(votedPlayer)) {
+			this.mutPlayer = votedPlayer;
+		}
 	}
 
 	private void professionalVoteNight(Player votedPlayer) {
-		if (votedPlayer.getRoll() instanceof GodFather) {
+		if (votedPlayer.getRole() instanceof GodFather) {
 			return;
 		}
-		if (votedPlayer.getRoll() instanceof Mafia) {
+		if (votedPlayer.getRole() instanceof Mafia) {
 			this.killNight.add(votedPlayer);
 			return;
 		}
@@ -686,7 +696,7 @@ public class Room implements Runnable {
 	private void mafiaVoteNight(Player mafiaPlayer, Player votedPlayer) {
 		try {
 			Player shooter = this.getMafiaShooter();
-			if (mafiaPlayer.equals(shooter) && !(votedPlayer.getRoll() instanceof DieHard)) {
+			if (mafiaPlayer.equals(shooter) && !(votedPlayer.getRole() instanceof DieHard)) {
 				this.killNight.add(votedPlayer);
 				return;
 			}
@@ -706,7 +716,7 @@ public class Room implements Runnable {
 			return doctorLecter;
 		}
 		for (Player player : players) {
-			if (player.getIsAlive() && player.getRoll() instanceof Mafia) {
+			if (player.getIsAlive() && player.getRole() instanceof Mafia) {
 				return player;
 			}
 		}
@@ -726,7 +736,7 @@ public class Room implements Runnable {
 		for (int i = 0; i < this.killNight.size(); i++) {
 			tmp = this.killNight.get(i);
 			if (tmp.equals(votedPlayer)) {
-				if (tmp.getRoll() instanceof Mafia) {
+				if (tmp.getRole() instanceof Mafia) {
 
 					killNight.remove(tmp);
 				}
@@ -752,8 +762,19 @@ public class Room implements Runnable {
 		}
 		Collections.shuffle(killedPlayers);
 		for (Player killedPlayer : killedPlayers) {
-			this.broadcastMessage(killedPlayer.getRoll().toString());
+			this.broadcastMessage(killedPlayer.getRole().toString());
 		}
 		this.dieHardInquiry = false;
+	}
+
+	private void assignRoles() {
+		this.players = Utilty.assignPlayersRole(players);
+		for (Player player : players) {
+			try {
+				player.getStream().writeUTF(String.format(Constants.MSG_ASSIGN_ROLE_FOR_PLAYER, player.getUsername(), player.getRole().getRole()));
+			} catch (IOException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
 	}
 }

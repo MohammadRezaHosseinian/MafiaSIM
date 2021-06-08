@@ -60,5 +60,12 @@ public class Constants {
 	public static final String MSG_PLAYER_IS_NOT_MAFIA = "[+] Player is not mafia";
 	public static final String MSG_PLAYER_IS_MAFIA = "[+] Player is mafia";
 	public static final String MSG_YOU_CANT_SHOOT = "[-] Player with user name %s can shoot and you can't shoot";
-
+	public static final String MSG_ASSIGN_ROLE_FOR_PLAYER = "[+] Dear %s , your role is assigned %s !!!";
+	public static final int MINIMUM_PLAYERS_COUNT = 10;
+	public static final int ROLE_DOCTOR_MAX_SELF_SAVE_TIMES = 1;
+	public static final int ROLE_DIEHARD_ARMOR_TIMES = 1;
+	public static final int ROLE_DIEHARD_QUERY_TIMES = 2;
+	public static final int ROLE_DOCTOR_LECTER_MAX_SELF_SAVE_TIMES = 1;
+	public static final int ROLE_MAYOR_CANCEL_VOTTING = 2;
+	
 }
