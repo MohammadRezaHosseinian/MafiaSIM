@@ -27,6 +27,7 @@ import rolling.Mafia;
 import rolling.Mayor;
 import rolling.Professional;
 import rolling.Psychologist;
+import rolling.Role;
 
 /**
  *
@@ -697,6 +698,12 @@ public class Room implements Runnable {
 		try {
 			Player shooter = this.getMafiaShooter();
 			if (mafiaPlayer.equals(shooter) && !(votedPlayer.getRole() instanceof DieHard)) {
+				if (votedPlayer.getRole() instanceof DieHard) {
+					DieHard dieHardRole = (DieHard) votedPlayer.getRole();
+					if (dieHardRole.checkHasArmor()) {
+						return;
+					}
+				}
 				this.killNight.add(votedPlayer);
 				return;
 			}
@@ -724,8 +731,11 @@ public class Room implements Runnable {
 	}
 
 	private void mayorAct() {
+		Mayor mayorRole = (Mayor) this.getMayor().getRole();
 		if (this.mayorCanceledVotting) {
-			this.killedByVottingPlayer.setIsAlive(true);
+			if (mayorRole.canCancelVotting()) {
+				this.killedByVottingPlayer.setIsAlive(true);
+			}
 		}
 		this.killedByVottingPlayer = null;
 		this.mayorCanceledVotting = false;
@@ -733,6 +743,13 @@ public class Room implements Runnable {
 
 	private void doctorLecterAct(Player votedPlayer) {
 		Player tmp;
+		Player doctorLecterPlayer = getDoctorLecter();
+		DoctorLecter doctorLecterRole = (DoctorLecter) doctorLecterPlayer.getRole();
+		if (doctorLecterPlayer.equals(votedPlayer)) {
+			if (!doctorLecterRole.canSaveSelf()) {
+				return;
+			}
+		}
 		for (int i = 0; i < this.killNight.size(); i++) {
 			tmp = this.killNight.get(i);
 			if (tmp.equals(votedPlayer)) {
@@ -746,11 +763,14 @@ public class Room implements Runnable {
 	}
 
 	private void dieHardAct(Player votedPlayer) {
+		DieHard dieHardRole = (DieHard) this.getDieHard().getRole();
 		if (votedPlayer == null) {
 			this.dieHardInquiry = false;
 			return;
 		}
-		this.dieHardInquiry = true;
+		if (dieHardRole.checkCanQuery()) {
+			this.dieHardInquiry = true;
+		}
 	}
 
 	private void broadCastKillRole() {
@@ -776,5 +796,14 @@ public class Room implements Runnable {
 				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
+	}
+
+	private Player getMayor() {
+		for (Player player : players) {
+			if (player.getRole() instanceof Mayor) {
+				return player;
+			}
+		}
+		return null;
 	}
 }
