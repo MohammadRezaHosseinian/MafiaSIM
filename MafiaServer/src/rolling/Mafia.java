@@ -9,10 +9,10 @@ package rolling;
  *
  * @author mohammadreza
  */
-public class Mafia extends Roll{
+public class Mafia extends Role{
 	
-	public Mafia(String name) {
-		super(name);
+	public Mafia() {
+		super();
 	}
 	
 }
