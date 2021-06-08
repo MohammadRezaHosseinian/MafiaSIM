@@ -11,10 +11,24 @@ package rolling;
  */
 public class Doctor  extends Citizen{
 	
-	public Doctor(String name) {
-		super(name);
+	private int canSaveSelfTimes;
+	
+	public Doctor(int saveSelf) {
+		super();
+		this.canSaveSelfTimes = saveSelf;
 	}
 	
+	public boolean checkCanSaveSelf(){
+		if(this.canSaveSelfTimes > 0){
+			this.canSaveSelfTimes--;
+			return true;
+		}
+		return false;
+	}
 	
+	@Override
+	public boolean hasNightAct(){
+		return true;
+	}
 	
 }
