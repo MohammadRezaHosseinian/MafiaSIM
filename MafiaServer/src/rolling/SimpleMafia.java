@@ -11,8 +11,8 @@ package rolling;
  */
 public class SimpleMafia extends Mafia {
 
-	public SimpleMafia(String name) {
-		super(name);
+	public SimpleMafia() {
+		super();
 	}
 
 }
