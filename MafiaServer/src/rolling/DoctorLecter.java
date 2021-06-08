@@ -10,9 +10,24 @@ package rolling;
  * @author mohammadreza
  */
 public class DoctorLecter extends Mafia {
-
-	public DoctorLecter(String name) {
-		super(name);
+	
+	private int saveSelfTimes;
+	
+	public DoctorLecter(int times) {
+		super();
+		this.saveSelfTimes = times;
 	}
-
+	
+	public boolean canSaveSelf(){
+		if(saveSelfTimes > 0){
+			this.saveSelfTimes--;
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean hasNightAct(){
+		return true;
+	}
 }
