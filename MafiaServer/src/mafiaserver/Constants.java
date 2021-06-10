@@ -13,7 +13,7 @@ public class Constants {
 
 	public static final String ROOM_FILE_PATH = "rooms.txt";
 	public static final String USER_FILE_PATH = "users.txt";
-	public static final String ROUTE_LIST_USERS = "user-list";
+	public static final String ROUTE_LIST_USERS = "alluser";
 	public static final String ROUTE_LIST_ROOMS = "room-list";
 	public static final String ROUTE_CREATE_ROOM = "create-room";
 	public static final String ROUTE_JOIN_ROOM = "join-room";
@@ -67,5 +67,7 @@ public class Constants {
 	public static final int ROLE_DIEHARD_QUERY_TIMES = 2;
 	public static final int ROLE_DOCTOR_LECTER_MAX_SELF_SAVE_TIMES = 1;
 	public static final int ROLE_MAYOR_CANCEL_VOTTING = 2;
+	public static final String ROUTE_LIST_ROOM_USERS = "room-users";
+	public static final String MSG_BAD_ROOM_NAME_ERRORE = "[-] No exists any room with name: %s, please use %s to find all rooms";
 	
 }

@@ -72,11 +72,14 @@ public class ClientHandler implements Runnable {
 					this.roomListCmd();
 				}
 				if (spliteReq[0].equals(Constants.ROUTE_LIST_USERS)) {
-					this.userListCmd();
+					this.allUserListCmd();
 				}
 				break;
 			case 2:
-
+				if(spliteReq[0].equals(Constants.ROUTE_LIST_ROOM_USERS)){
+					String roomName = spliteReq[1];
+					this.roomUsersListCmd(roomName);
+				}
 				break;
 			case 3:
 				if (spliteReq[0].equals(Constants.ROUTE_CREATE_ROOM)) {
@@ -106,19 +109,44 @@ public class ClientHandler implements Runnable {
 		Room room = new Room(roomname, playersCount);
 		this.rooms.add(room);
 		new Thread(room).start();
-		Utils.addRoom(roomname);
-	}
 
-	
+	}
 
 	private void roomListCmd() {
-		System.out.println("[+] rooms list cmd func: ");
-		System.out.println(Utils.listRoom());
+		try {
+			System.out.println("[+] rooms list cmd func: ");
+			this.dos.writeUTF(Utils.listRooms(this.rooms));
+		} catch (IOException ex) {
+			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
-	private void userListCmd() {
+	private void allUserListCmd() {
 		System.out.println("[+] users list cmd func: ");
-		System.out.println(Utils.listUser());
+
+		try {
+			this.dos.writeUTF(Utils.listAllUser(this.rooms));
+		} catch (IOException ex) {
+			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void roomUsersListCmd(String roomName) {
+		Room room = this.getRoom(roomName);
+		if(room != null){
+			try {
+				this.dos.writeUTF(Utils.listRoomUser(room));
+			} catch (IOException ex) {
+				Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			return;
+		}
+		try {
+			this.dos.writeUTF(String.format(Constants.MSG_BAD_ROOM_NAME_ERRORE,roomName,Constants.ROUTE_LIST_ROOMS));
+		} catch (IOException ex) {
+			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
 	}
 
 }
