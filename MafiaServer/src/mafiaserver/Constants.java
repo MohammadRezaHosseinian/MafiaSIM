@@ -69,5 +69,5 @@ public class Constants {
 	public static final int ROLE_MAYOR_CANCEL_VOTTING = 2;
 	public static final String ROUTE_LIST_ROOM_USERS = "room-users";
 	public static final String MSG_BAD_ROOM_NAME_ERRORE = "[-] No exists any room with name: %s, please use %s to find all rooms";
-	
+	public static final String EXIT = "exit";
 }
