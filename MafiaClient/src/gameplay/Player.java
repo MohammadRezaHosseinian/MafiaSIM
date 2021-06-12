@@ -23,10 +23,8 @@ public class Player {
 	private boolean canSpeak;
 	private final BufferedReader inputReader;
 
-	public Player(String username, int chairNumber, String roll) {
-		this.username = username;
-		this.chairNumber = chairNumber;
-		this.roll = roll;
+	public Player(String username) {
+		this.username = username;		
 		this.isAlive = true;
 		this.canSpeak = false;
 		this.inputReader = new BufferedReader(new InputStreamReader(System.in));
