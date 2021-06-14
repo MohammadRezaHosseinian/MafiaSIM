@@ -70,4 +70,6 @@ public class Constants {
 	public static final String ROUTE_LIST_ROOM_USERS = "room-users";
 	public static final String MSG_BAD_ROOM_NAME_ERRORE = "[-] No exists any room with name: %s, please use %s to find all rooms";
 	public static final String EXIT = "exit";
+	public static final String MSG_BAD_USERNAME = "[-] Oops, this username is duplicated, please change your user name and join again.";
+	public static final String MSG_CLOSED_CONNECTION = "[-] Oops the connection %s is closed!";
 }
