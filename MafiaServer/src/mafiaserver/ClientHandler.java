@@ -49,7 +49,8 @@ public class ClientHandler implements Runnable {
 				System.out.println("get new req : " + request);
 				this.parseRequest(request);
 			} catch (IOException ex) {
-				Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.println(String.format("[-] the connection with ip : %s closed! ", this.connection.getInetAddress().getHostAddress()));
+				return;
 			}
 		}
 	}
