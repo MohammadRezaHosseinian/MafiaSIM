@@ -94,4 +94,17 @@ public class Player {
 	public void setIsAlive(boolean b) {
 		this.isAlive = true;
 	}
+	
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("\nname : ").append(username);
+		sb.append("\nis-alive ").append(isAlive);
+		sb.append("\nisReady : ").append(isReady);
+		sb.append("\ncan speak : ").append(canSpeak);
+		sb.append("\ncan vote : ").append(canVote);
+//		sb.append("role : ").append(role.getRole());
+		
+		return sb.toString();
+	}
 }
