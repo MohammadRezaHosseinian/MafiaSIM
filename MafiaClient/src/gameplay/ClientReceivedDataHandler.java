@@ -28,17 +28,17 @@ public class ClientReceivedDataHandler implements Runnable {
 	public void run() {
 		String receivedData;
 		while (true) {
-			if (this.handler.getGameState().equals(GameState.SHOW_MENU_STATE)) {
-				try {
-					Thread.sleep(150);
-				} catch (InterruptedException ex) {
-					Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				continue;
-			}
+//			if (this.handler.getGameState().equals(GameState.SHOW_MENU_STATE)) {
+//				try {
+//					Thread.sleep(150);
+//				} catch (InterruptedException ex) {
+//					Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);
+//				}
+//				continue;
+//			}
 			try {
 				receivedData = this.dis.readUTF();
-				System.out.println(receivedData);
+				System.out.println(String.format("[+] new message from server:\t%s",receivedData));
 				this.handler.setGameState(GameState.SHOW_MENU_STATE);
 			} catch (IOException ex) {
 				Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);

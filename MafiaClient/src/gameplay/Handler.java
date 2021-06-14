@@ -27,11 +27,11 @@ public class Handler implements Runnable{
 	public Handler(String host, int port, String username) {
 		Config config = Config.createConnection(host, port, username);
 		Socket connection = config.getConnection();
-		this.currentState = GameState.SHOW_RECEIVED_MESSAGE_STATE;
+		this.currentState = GameState.SHOW_MENU_STATE;
 		
 		try {
-			this.out = (DataOutputStream) connection.getOutputStream();
-			this.input = (DataInputStream) connection.getInputStream();
+			this.out = new DataOutputStream(connection.getOutputStream());
+			this.input = new DataInputStream(connection.getInputStream());
 		} catch (IOException ex) {
 			Logger.getLogger(Handler.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -45,8 +45,6 @@ public class Handler implements Runnable{
 		ClientReceivedDataHandler crdh = new ClientReceivedDataHandler(this.input, this);
 		new Thread(cch).start();
 		new Thread(crdh).start();
-		while(true){}
-		//
 	}
 	
 	public GameState getGameState(){
@@ -57,4 +55,7 @@ public class Handler implements Runnable{
 		this.currentState = s;
 	}
 
+	public String getUsername(){
+		return this.username;
+	}
 }

@@ -22,7 +22,8 @@ public class ClientCommandHandler implements Runnable {
 	private final BufferedReader inputReader;
 	private final DataOutputStream dos;
 	private final Handler handler;
-	private Scanner input;
+	private final Scanner input;
+	private String roomName;
 
 	public ClientCommandHandler(DataOutputStream dos, Handler handler) {
 		this.dos = dos;
@@ -47,14 +48,14 @@ public class ClientCommandHandler implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			if (this.handler.getGameState().equals(GameState.SHOW_RECEIVED_MESSAGE_STATE)) {
-				try {
-					Thread.sleep(150);
-				} catch (InterruptedException ex) {
-					Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				continue;
-			}
+//			if (this.handler.getGameState().equals(GameState.SHOW_RECEIVED_MESSAGE_STATE)) {
+//				try {
+//					Thread.sleep(150);
+//				} catch (InterruptedException ex) {
+//					Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+//				}
+//				continue;
+//			}
 			this.menu();
 			this.handler.setGameState(GameState.SHOW_RECEIVED_MESSAGE_STATE);
 		}
@@ -63,53 +64,51 @@ public class ClientCommandHandler implements Runnable {
 
 	private void menu() {
 		this.showMenu();
+		this.handler.setGameState(GameState.SHOW_RECEIVED_MESSAGE_STATE);
 		this.choiceMenuItem();
 	}
 
 	private void choiceMenuItem() {
-		
-		String choice = this.input.next().toLowerCase();
-		while (true) {
 
-			switch (choice) {
-				case "cr":
-					this.createRoomCmd();
-					break;
-				case "jr":
-					this.joinRoomCmd();
-					break;
-				case "rr":
-					this.readyRequestCmd();
-					break;
-				case "lr":
-					this.listRoomCmd();
-					break;
-				case "lur":
-					this.listUserInRoom();
-					break;
-				case "lau":
-					this.listAllUsers();
-					break;
-				case "ch":
-					this.chatCmd();
-					break;
-				case "vu":
-					this.voteToUserCmd();
-					break;
-				case "ex":
-					return;
-				default:
-					System.out.println(Constant.MSG_WRONG_CHOICE);
-			}
+		String choice = this.input.next().toLowerCase();
+		switch (choice) {
+			case "cr":
+				this.createRoomCmd();
+				break;
+			case "jr":
+				this.joinRoomCmd();
+				break;
+			case "rr":
+				this.readyRequestCmd();
+				break;
+			case "lr":
+				this.listRoomCmd();
+				break;
+			case "lur":
+				this.listUserInRoom();
+				break;
+			case "lau":
+				this.listAllUsers();
+				break;
+			case "ch":
+				this.chatCmd();
+				break;
+			case "vu":
+				this.voteToUserCmd();
+				break;
+			case "ex":
+				return;
+			default:
+				System.out.println(Constant.MSG_WRONG_CHOICE);
 		}
 	}
 
 	private void createRoomCmd() {
 		System.out.println(Constant.MSG_INPUT_ROOM_NAME);
-		String roomName = input.next();
+		String roomname = input.next();
 		System.out.println(Constant.MSG_INPUT_ROOM_SIZE);
 		int roomSize = input.nextInt();
-		String request = String.format("%s/%s/%d",Constant.ROUTE_CREATE_ROOM,roomName,roomSize);
+		String request = String.format("%s/%s/%d", Constant.ROUTE_CREATE_ROOM, roomname, roomSize);
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
@@ -118,31 +117,72 @@ public class ClientCommandHandler implements Runnable {
 	}
 
 	private void joinRoomCmd() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		System.out.println(Constant.MSG_INPUT_ROOM_NAME);
+		this.roomName = input.next();
+		String request = String.format("%s/%s/%s", Constant.ROUTE_JOIN_ROOM, roomName, this.handler.getUsername());
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void readyRequestCmd() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		String request = String.format("%s/%s/%s", this.roomName, Constant.ROUTE_READY_PALYER, this.handler.getUsername());
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void listRoomCmd() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		String request = String.format("%s", Constant.ROUTE_LIST_ROOMS);
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void listUserInRoom() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		String request = String.format("%s/%s", Constant.ROUTE_LIST_USERS_IN_ROOM, this.roomName);
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void listAllUsers() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		String request = String.format("%s", Constant.ROUTE_LIST_ALL_USERS);
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void chatCmd() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		System.out.println("");
+		try {
+			String chatMessage = this.inputReader.readLine();
+			String request = String.format("%s/%s/%s/%s", this.roomName, Constant.ROUTE_CHAT, this.handler.getUsername(), chatMessage);
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void voteToUserCmd() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		System.out.println("----");
+		int voteNumber = this.input.nextInt();
+		String request = String.format("%s/%s/%s/%d", this.roomName, Constant.ROUTE_VOTE, this.handler.getUsername(), voteNumber);
+		try {
+			this.dos.writeUTF(request);
+		} catch (IOException ex) {
+			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 }

@@ -40,20 +40,8 @@ public class Config {
 			System.out.println("[+] Connection stablished!");
 			DataInputStream input = new DataInputStream(socket.getInputStream());
 			DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-			String serverMessage;
-			serverMessage = input.readUTF();
-			System.out.println("[+] received new message from server:");
-			System.out.println("\t---> " + serverMessage);
-			Scanner scanner = new Scanner(System.in);
-			while (true) {
-				output.writeUTF(username);
-				serverMessage = input.readUTF();
-				if (serverMessage.equals("OK")) {
-					break;
-				}
-				System.out.println("[!] please insert another username:");
-				username = scanner.next();
-			}
+
+			
 			return new Config(username, socket);
 		} catch (IOException ex) {
 			System.out.println("[-] Connection failed!");
