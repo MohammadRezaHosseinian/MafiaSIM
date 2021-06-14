@@ -76,6 +76,11 @@ public class Room implements Runnable {
 		for (Player player : players) {
 			if (player.getUsername().equals(username)) {
 				System.out.println("This username used Please enter another name");
+				try {
+					dos.writeUTF(Constants.MSG_BAD_USERNAME);
+				} catch (IOException ex) {
+					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				}
 				return false;
 			}
 		}
@@ -219,12 +224,16 @@ public class Room implements Runnable {
 	}
 
 	private void broadcastMessage(String msg) {
-		for (Player player : players) {
+		for (int i=0; i<players.size(); i++) {
+			Player player = players.get(i);
 			if (player.getIsAlive()) {
 				try {
 					player.getStream().writeUTF(msg);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					// connection closed, remove player from room
+					player.setIsAlive(false);
+					this.players.remove(player);
+					this.broadcastMessage(String.format(Constants.MSG_CLOSED_CONNECTION, player.getUsername()));
 				}
 			}
 		}
