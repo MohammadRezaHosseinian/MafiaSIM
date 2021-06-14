@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mafiaserver.Constants;
@@ -27,7 +25,6 @@ import rolling.Mafia;
 import rolling.Mayor;
 import rolling.Professional;
 import rolling.Psychologist;
-import rolling.Role;
 
 /**
  *
@@ -75,6 +72,7 @@ public class Room implements Runnable {
 	}
 
 	public boolean addPlayer(String username, DataOutputStream dos) {
+		System.out.println("join room -> " + username);
 		for (Player player : players) {
 			if (player.getUsername().equals(username)) {
 				System.out.println("This username used Please enter another name");
@@ -120,6 +118,7 @@ public class Room implements Runnable {
 	}
 
 	public void handleReq(DataOutputStream dos, String cmd, String arg) {
+		System.out.println("----> " + cmd + "   //" + arg);
 		switch (cmd) {
 			case Constants.ROUTE_JOIN_ROOM:
 				this.addPlayer(arg, dos);
@@ -127,14 +126,16 @@ public class Room implements Runnable {
 			case Constants.ROUTE_READY_PALYER:
 				Player p = getPlayer(arg);
 				p.setIsReady(true);
-				this.checkAllPlayersReady();
 				break;
 
 		}
 	}
 
 	public void handleReq(String cmd, String arg1, String arg2) {
-
+		System.out.println("state is : " + state.name());
+		System.out.println("players count : " + playersCount);
+		System.out.println("players size : " + players.size());
+//		showTest();
 		switch (cmd) {
 			case Constants.ROUTE_CHAT:
 				Player p = this.getPlayer(arg1);
@@ -145,6 +146,12 @@ public class Room implements Runnable {
 					this.broadcastMessage(arg1 + " : " + arg2 + "\n");
 				} else if (state == GameState.MAFIA_TEAM_NIGHT_ACT && p.isCanSpeak()) {
 					this.mafiaBroadcast(arg1 + " : " + arg2 + "\n");
+				} else {
+					try {
+						p.getStream().writeUTF("you can't chat at this time");
+					} catch (IOException ex) {
+						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					}
 				}
 				break;
 			case Constants.ROUTE_VOTE:
@@ -211,16 +218,6 @@ public class Room implements Runnable {
 		}
 	}
 
-	private boolean checkAllPlayersReady() {
-		for (Player player : players) {
-			if (!player.getIsReady()) {
-				return false;
-			}
-		}
-		this.gameIsStart = true;
-		return true;
-	}
-
 	private void broadcastMessage(String msg) {
 		for (Player player : players) {
 			if (player.getIsAlive()) {
@@ -235,7 +232,7 @@ public class Room implements Runnable {
 
 	@Override
 	public void run() {
-		while (!this.gameIsStart || players.size() != playersCount) {
+		while (players.size() < playersCount) {
 			this.broadcastMessage("[-] waiting to all users be ready!");
 			try {
 				Thread.sleep(2000);
@@ -263,16 +260,14 @@ public class Room implements Runnable {
 			this.broadCastKillRole();
 		}
 		this.isDay = true;
-		Timer timer;
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				broadcastMessage(Constants.MSG_BEGINING_OF_DAY);
-				setCanSpeekPlayers(true);
-			}
-		};
-		timer = new Timer("Timer");
-		timer.schedule(task, Constants.DAY_TIME * Constants.MIN_TO_MILISECOND);
+
+		setCanSpeekPlayers(true);
+		broadcastMessage(Constants.MSG_BEGINING_OF_DAY);
+		try {
+			Thread.sleep(Constants.DAY_TIME * Constants.MIN_TO_MILISECOND);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+		}
 		setCanSpeekPlayers(false);
 		this.broadcastMessage(Constants.MSG_END_OF_DAY);
 		state = GameState.INTER_STATES_PHASE;
@@ -303,15 +298,16 @@ public class Room implements Runnable {
 
 	private void votePhase() {
 		state = GameState.VOTE_AFTER_DAY;
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				broadcastMessage(Constants.MSG_BEGINING_OF_VOTING);
-				setPlayerCanVote(true);
-			}
-		};
-		Timer timer = new Timer("Timer Voting");
-		timer.schedule(task, Constants.VOTING_TIME * Constants.MIN_TO_MILISECOND);
+
+		broadcastMessage(Constants.MSG_BEGINING_OF_VOTING);
+		setPlayerCanVote(true);
+
+		try {
+			Thread.sleep(Constants.VOTING_TIME * Constants.MIN_TO_MILISECOND);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
 		this.broadcastMessage(Constants.MSG_END_OF_VOTING);
 		this.killByVoting();
 		this.vottingSystem.clear();
@@ -329,8 +325,12 @@ public class Room implements Runnable {
 
 	private void killByVoting() {
 		List<Integer> sortedVotes = new ArrayList<>(vottingSystem.values());
+		if (sortedVotes.isEmpty()) {
+			return;
+		}
 		Collections.sort(sortedVotes);
 		int quorum = (int) 0.5 * this.alivePlayersCount();
+
 		int maxVote = sortedVotes.get(sortedVotes.size() - 1);
 		if (maxVote != sortedVotes.get(sortedVotes.size() - 2)) {
 			if (maxVote >= quorum) {
@@ -368,15 +368,15 @@ public class Room implements Runnable {
 			this.introduceMafia();
 			return;
 		}
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				broadcastMessage(Constants.MSG_MAFIA_NIGHT_PHASE);
-				setMafiaCanVote(true);
-			}
-		};
-		Timer timer = new Timer("MafiaNight");
-		timer.schedule(task, Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
+
+		broadcastMessage(Constants.MSG_MAFIA_NIGHT_PHASE);
+		setMafiaCanVote(true);
+		try {
+			Thread.sleep(Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
 		this.setMafiaCanVote(false);
 		this.setMafiaCanSpeek(false);
 		this.broadcastMessage(Constants.MSG_MAFIA_END_NIGHT);
@@ -388,16 +388,15 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_DOCTOR_WAKEUP);
 		Player doctor = this.getDoctor();
 		if (doctor != null) {
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					if (doctor.getIsAlive()) {
-						doctor.setCanVote(true);
-					}
-				}
-			};
-			Timer timer = new Timer("Doctor");
-			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+
+			if (doctor.getIsAlive()) {
+				doctor.setCanVote(true);
+			}
+			try {
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.MIN_TO_MILISECOND);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
 			doctor.setCanVote(false);
 			this.broadcastMessage(Constants.MSG_DOCTOR_SLEEP);
 			state = GameState.INTER_STATES_PHASE;
@@ -409,17 +408,16 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_DIEHARD_WAKEUP);
 		Player dieHard = this.getDieHard();
 		if (dieHard != null) {
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					if (dieHard.getIsAlive()) {
-						dieHard.setCanVote(true);
-					}
-				}
 
-			};
-			Timer timer = new Timer("DieHard");
-			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			if (dieHard.getIsAlive()) {
+				dieHard.setCanVote(true);
+			}
+			try {
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.MIN_TO_MILISECOND);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
+
 			dieHard.setCanVote(false);
 			this.broadcastMessage(Constants.MSG_DIEHARD_SLEEP);
 		}
@@ -431,18 +429,19 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_PROFESSIONAL_WAKEUP);
 		Player professional = this.getProfessional();
 		if (professional != null) {
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					if (professional.getIsAlive()) {
-						professional.setCanVote(true);
-					}
-				}
-			};
-			Timer timer = new Timer("peofessional");
-			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+
+			if (professional.getIsAlive()) {
+				professional.setCanVote(true);
+			}
+			try {
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.MIN_TO_MILISECOND);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
+
 			professional.setCanVote(false);
 		}
+
 		this.broadcastMessage(Constants.MSG_PROFESSIONAL_SLEEP);
 		state = GameState.INTER_STATES_PHASE;
 	}
@@ -452,16 +451,15 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_DETECTIVE_WAKEUP);
 		Player detective = this.getDetective();
 		if (detective != null) {
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					if (detective.getIsAlive()) {
-						detective.setCanVote(true);
-					}
-				}
-			};
-			Timer timer = new Timer("Detective");
-			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+
+			if (detective.getIsAlive()) {
+				detective.setCanVote(true);
+			}
+			try {
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.MIN_TO_MILISECOND);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
 			detective.setCanVote(false);
 		}
 		this.broadcastMessage(Constants.MSG_DETECTIVE_SLEEP);
@@ -473,16 +471,15 @@ public class Room implements Runnable {
 		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_WAKEUP);
 		Player psychologist = this.getPsychologist();
 		if (psychologist != null) {
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					if (psychologist.getIsAlive()) {
-						psychologist.setCanVote(true);
-					}
-				}
-			};
-			Timer timer = new Timer("Mute");
-			timer.schedule(task, Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+
+			if (psychologist.getIsAlive()) {
+				psychologist.setCanVote(true);
+			}
+			try {
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.MIN_TO_MILISECOND);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			}
 			psychologist.setCanVote(false);
 		}
 		this.broadcastMessage(Constants.MSG_PSYCHOLOGIST_SLEEP);
@@ -558,7 +555,8 @@ public class Room implements Runnable {
 				try {
 					player.getStream().writeUTF(msg);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(Room.class
+							.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		}
@@ -610,8 +608,8 @@ public class Room implements Runnable {
 	}
 
 	private void checkGameIsOver() {
-		ArrayList<Player> mafiaAliveTeam = new ArrayList();
-		ArrayList<Player> citizenAliveTeam = new ArrayList();
+		ArrayList<Player> mafiaAliveTeam = new ArrayList<>();
+		ArrayList<Player> citizenAliveTeam = new ArrayList<>();
 		for (Player player : this.players) {
 			if (player.getIsAlive()) {
 				if (player.getRole() instanceof Mafia) {
@@ -621,7 +619,7 @@ public class Room implements Runnable {
 				}
 			}
 		}
-		if (mafiaAliveTeam.size() == 0) {
+		if (mafiaAliveTeam.isEmpty()) {
 			this.gameIsOver = true;
 			this.broadcastMessage(Constants.MSG_CITIZENS_WIN);
 			return;
@@ -657,19 +655,22 @@ public class Room implements Runnable {
 				this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				return;
 			} catch (IOException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(Room.class
+						.getName()).log(Level.SEVERE, null, ex);
 			}
 			if (votedPlayer.getRole() instanceof Citizen) {
 				try {
 					this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(Room.class
+							.getName()).log(Level.SEVERE, null, ex);
 				}
 				if (votedPlayer.getRole() instanceof Mafia) {
 					try {
 						this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_MAFIA);
 					} catch (IOException ex) {
-						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+						Logger.getLogger(Room.class
+								.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			}
@@ -709,7 +710,8 @@ public class Room implements Runnable {
 			}
 			mafiaPlayer.getStream().writeUTF(String.format(Constants.MSG_YOU_CANT_SHOOT, shooter.getUsername()));
 		} catch (IOException ex) {
-			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Room.class
+					.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -793,7 +795,8 @@ public class Room implements Runnable {
 			try {
 				player.getStream().writeUTF(String.format(Constants.MSG_ASSIGN_ROLE_FOR_PLAYER, player.getUsername(), player.getRole().getRole()));
 			} catch (IOException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(Room.class
+						.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
@@ -805,5 +808,12 @@ public class Room implements Runnable {
 			}
 		}
 		return null;
+	}
+
+	private void showTest() {
+		for (Player player : players) {
+			System.out.println("------------------");
+			System.out.println(player.toString());
+		}
 	}
 }
