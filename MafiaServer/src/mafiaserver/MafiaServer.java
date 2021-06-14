@@ -5,6 +5,7 @@
  */
 package mafiaserver;
 
+import gameplay.RoomHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -25,6 +26,7 @@ public class MafiaServer {
 		try {
 			serverSocket = new ServerSocket(8080);
 			serverSocket.setReuseAddress(true);
+			RoomHandler roomHandler = new RoomHandler();
 			System.out.println("[!] waitting to connection:");
 			while (true) {
 				Socket client = serverSocket.accept();
@@ -32,7 +34,7 @@ public class MafiaServer {
 						client.getInetAddress().getHostAddress(),
 						client.getInetAddress().getHostName()
 				);
-				ClientHandler clientHandler = new ClientHandler(client);
+				ClientHandler clientHandler = new ClientHandler(client, roomHandler);
 				new Thread(clientHandler).start();
 			}
 
