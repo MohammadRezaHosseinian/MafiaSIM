@@ -8,6 +8,7 @@ package gameplay;
 import Player.Player;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import rolling.Role;
 import mafiaserver.Constants;
 import rolling.Detective;
@@ -114,6 +115,14 @@ public class Utilty {
 			players.get(i).setRole(roles.get(i));
 		}
 		return players;
+	}
+	
+	public static ArrayList<Integer> votingsystemValuseList(HashMap<Player, Integer> votingsystem){
+		ArrayList<Integer> values = new ArrayList<>();
+		for (Integer voteCount:votingsystem.values()) {
+			values.add(voteCount);
+		}
+		return values;
 	}
 
 }
