@@ -46,16 +46,8 @@ public class ClientCommandHandler implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		while (true) {
-//			if (this.handler.getGameState().equals(GameState.SHOW_RECEIVED_MESSAGE_STATE)) {
-//				try {
-//					Thread.sleep(150);
-//				} catch (InterruptedException ex) {
-//					Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
-//				}
-//				continue;
-//			}
 			this.menu();
 			this.handler.setGameState(GameState.SHOW_RECEIVED_MESSAGE_STATE);
 		}
@@ -176,12 +168,15 @@ public class ClientCommandHandler implements Runnable {
 
 	private void voteToUserCmd() {
 		System.out.println("----");
-		int voteNumber = this.input.nextInt();
-		String request = String.format("%s/%s/%s/%d", this.roomName, Constant.ROUTE_VOTE, this.handler.getUsername(), voteNumber);
+
 		try {
+			int voteNumber = this.input.nextInt();
+			String request = String.format("%s/%s/%s/%d", this.roomName, Constant.ROUTE_VOTE, this.handler.getUsername(), voteNumber);
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
 			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}catch(Exception ex){
+			
 		}
 	}
 

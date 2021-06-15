@@ -17,7 +17,9 @@ import java.util.logging.Logger;
 /**
  *
  * @author mohammadreza
+ * In this class, we handle some problems
  */
+
 public class ClientHandler implements Runnable {
 
 	private final Socket connection;
@@ -40,7 +42,8 @@ public class ClientHandler implements Runnable {
 	public void run() {
 		this.serv();
 	}
-
+// read requests of clients
+	
 	private void serv() {
 		String request;
 		while (true) {
@@ -54,7 +57,8 @@ public class ClientHandler implements Runnable {
 			}
 		}
 	}
-
+//  Responds to client commands
+	
 	private void parseRequest(String request) {
 		String username, roomname, cmd;
 		String[] spliteReq = request.split("/");
@@ -106,7 +110,8 @@ public class ClientHandler implements Runnable {
 		}
 
 	}
-
+// if client want to create room this method response to this request
+	
 	private void createRoomCmd(String roomname, String roomSize) {
 		System.out.println("Create Room : " + roomname);
 		int playersCount = 10;
@@ -125,6 +130,8 @@ public class ClientHandler implements Runnable {
 
 	}
 
+// if client want to see list of rooms this method response to this request
+	
 	private void roomListCmd() {
 		try {
 			System.out.println("[+] rooms list cmd func: ");
@@ -134,6 +141,8 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+// if client want to see list of all users this method response to this request
+	
 	private void allUserListCmd() {
 		System.out.println("[+] users list cmd func: ");
 
@@ -144,6 +153,8 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+// if client want to see list of users in one room this method response to this request
+	
 	private void roomUsersListCmd(String roomName) {
 		Room room = this.roomHandler.getRoomByName(roomName);
 		if (room != null) {

@@ -8,6 +8,8 @@ package gameplay;
 /**
  *
  * @author mohammadreza
+ * in this enum we use amounts of 
+ * enum for category state of game
  */
 public enum GameState {
 	SHOW_MENU_STATE,

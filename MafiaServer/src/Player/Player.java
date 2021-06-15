@@ -11,6 +11,9 @@ import rolling.Role;
 /**
  *
  * @author mohammadreza
+ * in this class we set features of every player
+ * 
+ * 
  */
 public class Player {
 

@@ -6,8 +6,10 @@
 package gameplay;
 
 /**
- *
  * @author mohammadreza
+ * In this class we quantified 
+ * all the variables we might
+ * use in several places
  */
 public class Constant {
 

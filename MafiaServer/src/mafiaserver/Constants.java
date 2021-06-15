@@ -8,6 +8,9 @@ package mafiaserver;
 /**
  *
  * @author mohammadreza
+ *  In this class we quantified 
+ * all the variables we might
+ * use in several places
  */
 public class Constants {
 
@@ -18,7 +21,7 @@ public class Constants {
 	public static final String ROUTE_CREATE_ROOM = "create-room";
 	public static final String ROUTE_JOIN_ROOM = "join-room";
 	public static final String ROUTE_READY_PALYER = "ready";
-	public static final int DAY_TIME = 3;
+	public static final int DAY_TIME = 1;
 	public static final int VOTING_TIME = 1;
 	public static final String MSG_BEGINING_OF_DAY = "[+] Ok, day began, all alive players can speek "
 			+ DAY_TIME + " min";
@@ -27,7 +30,7 @@ public class Constants {
 			+ "[!] please highlighting own vote \n ";
 	public static int MIN_TO_MILISECOND = 60 * 1000;
 	public static final String MSG_END_OF_VOTING = "[+] End of preVoting";
-	public static final String MSG_WHITOUT_KILL_IN_VOTTING = "At this stage, she leaves the game";
+	public static final String MSG_WHITOUT_KILL_IN_VOTTING = "At this stage, nobody leaves the game";
 	public static final String MSG_BEGING_OF_NIGHT = "[+] Night began, all alive player must be sleep";
 	public static final String MSG_END_OF_NIGHT = "[+] Night finished";
 	public static final String MSG_GOD_FATHER_WAKEUP = "[!] GodFather wakeup";
@@ -64,12 +67,17 @@ public class Constants {
 	public static final int MINIMUM_PLAYERS_COUNT = 10;
 	public static final int ROLE_DOCTOR_MAX_SELF_SAVE_TIMES = 1;
 	public static final int ROLE_DIEHARD_ARMOR_TIMES = 1;
-	public static final int ROLE_DIEHARD_QUERY_TIMES = 2;
+	public static final int ROLE_DIEHARD_QUERY_TIMES = 1;
 	public static final int ROLE_DOCTOR_LECTER_MAX_SELF_SAVE_TIMES = 1;
-	public static final int ROLE_MAYOR_CANCEL_VOTTING = 2;
+	public static final int ROLE_MAYOR_CANCEL_VOTTING = 1;
 	public static final String ROUTE_LIST_ROOM_USERS = "room-users";
 	public static final String MSG_BAD_ROOM_NAME_ERRORE = "[-] No exists any room with name: %s, please use %s to find all rooms";
 	public static final String EXIT = "exit";
 	public static final String MSG_BAD_USERNAME = "[-] Oops, this username is duplicated, please change your user name and join again.";
 	public static final String MSG_CLOSED_CONNECTION = "[-] Oops the connection %s is closed!";
+	public static final String MSG_READY_RESPONSE = "[+] Ok , your ready-request received!";
+	public static final String MSG_ROOM_IS_FULL = "[-] Oops, this room is full, please join in other room!!!";
+	public static final String MSG_NOBODY_KILLED = "[+] nobody killed in voting!";
+	public static final String MSG_PHASE_TIME = " time from this phase is %d min";
+	public static final String MSG_PHASE_TIME_FOR_CITIZEN = " time from this phase is %d seconds";
 }

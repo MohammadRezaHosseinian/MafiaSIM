@@ -9,11 +9,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
 
 /**
  *
  * @author mohammadreza
+ * In this class, we configured 
+ * how clients communicate with 
+ * the server
  */
 public class Config {
 	private final String username;
@@ -32,7 +34,7 @@ public class Config {
 		return connection;
 	}
 	
-	
+// configured how to connection
 	public static Config createConnection(String host, int ip, String username) {
 		try {
 			System.out.println("[+] Connecting to server, please wait ...");

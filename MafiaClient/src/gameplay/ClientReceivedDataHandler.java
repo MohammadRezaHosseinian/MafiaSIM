@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author mohammadreza
+ * in this class client read server message
  */
 public class ClientReceivedDataHandler implements Runnable {
 
@@ -24,21 +25,14 @@ public class ClientReceivedDataHandler implements Runnable {
 		this.handler = handler;
 	}
 
+	// in this synchronized method  all client recive the server message
 	@Override
-	public void run() {
+	public synchronized void run() {
 		String receivedData;
 		while (true) {
-//			if (this.handler.getGameState().equals(GameState.SHOW_MENU_STATE)) {
-//				try {
-//					Thread.sleep(150);
-//				} catch (InterruptedException ex) {
-//					Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);
-//				}
-//				continue;
-//			}
 			try {
 				receivedData = this.dis.readUTF();
-				System.out.println(String.format("[+] new message from server:\t%s",receivedData));
+				System.out.println(String.format("[+] new message from server:\t%s", receivedData));
 				this.handler.setGameState(GameState.SHOW_MENU_STATE);
 			} catch (IOException ex) {
 				Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);

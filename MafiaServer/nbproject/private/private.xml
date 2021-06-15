@@ -4,10 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/mafiaserver/ClientHandler.java</file>
+            <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/mafiaserver/Utils.java</file>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/gameplay/RoomHandler.java</file>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/gameplay/Room.java</file>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/mafiaserver/Constants.java</file>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/Player/Player.java</file>
+            <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/gameplay/Utilty.java</file>
             <file>file:/home/mohammadreza/engineering/aut/Term%202/java_course/Projects/MidTerm/MafiaSIM/MafiaServer/src/mafiaserver/MafiaServer.java</file>
         </group>
     </open-files>

@@ -15,10 +15,11 @@ import java.util.logging.Logger;
 /**
  *
  * @author mohammadreza
+ * in this class we handle 
+ * relationship of server and client
  */
 public class Handler implements Runnable{
 
-	private Player player;
 	private DataInputStream input;
 	private DataOutputStream out;
 	private final String username;
