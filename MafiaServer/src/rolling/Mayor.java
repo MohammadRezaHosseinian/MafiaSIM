@@ -24,6 +24,13 @@ public class Mayor extends Citizen{
 	
 	public boolean canCancelVotting(){
 		if(this.cancelVotting > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean cancelVotting(){
+		if(this.cancelVotting > 0){
 			this.cancelVotting--;
 			return true;
 		}
