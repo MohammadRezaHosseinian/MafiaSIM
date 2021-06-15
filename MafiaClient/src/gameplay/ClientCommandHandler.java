@@ -16,6 +16,9 @@ import java.util.logging.Logger;
 /**
  *
  * @author mohammadreza
+ * In this class we created 
+ * the user connection to the 
+ * server by displaying the menu
  */
 public class ClientCommandHandler implements Runnable {
 
@@ -25,13 +28,14 @@ public class ClientCommandHandler implements Runnable {
 	private final Scanner input;
 	private String roomName;
 
+	// in this method we read user request 
 	public ClientCommandHandler(DataOutputStream dos, Handler handler) {
 		this.dos = dos;
 		this.handler = handler;
 		this.inputReader = new BufferedReader(new InputStreamReader(System.in));
 		this.input = new Scanner(System.in);
 	}
-
+	// this method shows menu
 	public void showMenu() {
 		System.out.println("[CR] : " + Constant.ROUTE_CREATE_ROOM);
 		System.out.println("[JR] : " + Constant.ROUTE_JOIN_ROOM);
@@ -53,13 +57,14 @@ public class ClientCommandHandler implements Runnable {
 		}
 
 	}
-
+	// by this method user make own choice
 	private void menu() {
 		this.showMenu();
 		this.handler.setGameState(GameState.SHOW_RECEIVED_MESSAGE_STATE);
 		this.choiceMenuItem();
 	}
 
+	// handle user choice
 	private void choiceMenuItem() {
 
 		String choice = this.input.next().toLowerCase();
@@ -95,6 +100,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to create room this mehod handle user's cmd
 	private void createRoomCmd() {
 		System.out.println(Constant.MSG_INPUT_ROOM_NAME);
 		String roomname = input.next();
@@ -108,6 +114,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to join room this mehod handle user's cmd
 	private void joinRoomCmd() {
 		System.out.println(Constant.MSG_INPUT_ROOM_NAME);
 		this.roomName = input.next();
@@ -119,6 +126,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to declaration of readiness this mehod handle user's cmd
 	private void readyRequestCmd() {
 		String request = String.format("%s/%s/%s", this.roomName, Constant.ROUTE_READY_PALYER, this.handler.getUsername());
 		try {
@@ -128,6 +136,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to see list of rooms this mehod handle user's cmd
 	private void listRoomCmd() {
 		String request = String.format("%s", Constant.ROUTE_LIST_ROOMS);
 		try {
@@ -137,6 +146,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to see all users list in one room this mehod handle user's cmd
 	private void listUserInRoom() {
 		String request = String.format("%s/%s", Constant.ROUTE_LIST_USERS_IN_ROOM, this.roomName);
 		try {
@@ -146,6 +156,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to see all users list this mehod handle user's cmd
 	private void listAllUsers() {
 		String request = String.format("%s", Constant.ROUTE_LIST_ALL_USERS);
 		try {
@@ -155,6 +166,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to chat this mehod handle user's cmd
 	private void chatCmd() {
 		System.out.println("");
 		try {
@@ -166,6 +178,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 	}
 
+	// if user want to vote this mehod handle user's cmd
 	private void voteToUserCmd() {
 		System.out.println("----");
 

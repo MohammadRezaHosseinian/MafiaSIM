@@ -16,6 +16,8 @@ import java.util.Scanner;
 public class Main {
 
 	/**
+	 * In this class where the main method is located
+	 * clients connect to the server
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {

@@ -8,6 +8,7 @@ package rolling;
 /**
  *
  * @author mohammadreza
+ * in this class we build thread for doctor
  */
 public class Doctor  extends Citizen{
 	

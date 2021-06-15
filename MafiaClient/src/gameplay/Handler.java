@@ -47,7 +47,7 @@ public class Handler implements Runnable{
 		new Thread(cch).start();
 		new Thread(crdh).start();
 	}
-	
+	// Specifies the game state
 	public GameState getGameState(){
 		return this.currentState;
 	}

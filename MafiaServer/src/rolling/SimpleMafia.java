@@ -8,6 +8,7 @@ package rolling;
 /**
  *
  * @author mohammadreza
+ * in this class we build thread for simple mafia
  */
 public class SimpleMafia extends Mafia {
 

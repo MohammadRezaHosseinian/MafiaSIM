@@ -8,6 +8,7 @@ package rolling;
 /**
  *
  * @author mohammadreza
+ * in this class we build thread for mayor
  */
 public class Mayor extends Citizen{
 	private int cancelVotting;

@@ -12,9 +12,12 @@ import java.util.ArrayList;
 /**
  *
  * @author mohammadreza
+ * In this class we handled 
+ * a number of client requests
  */
 public class Utils {
 
+	// this method shows list of rooms
 	public static String listRooms(ArrayList<Room> rooms) {
 		StringBuilder sb = new StringBuilder();
 		for (Room room : rooms) {
@@ -23,6 +26,7 @@ public class Utils {
 		return sb.toString();
 	}
 
+	// this method shows list of players in a room
 	public static String listRoomUser(Room room) {
 		StringBuilder sb = new StringBuilder();
 		for (Player player : room.getPlayers()) {
@@ -31,6 +35,7 @@ public class Utils {
 		return sb.toString();
 	}
 	
+	// this method shows list of all player
 	public static String listAllUser(ArrayList<Room> rooms){
 		StringBuilder sb = new StringBuilder();
 		for (Room room : rooms) {

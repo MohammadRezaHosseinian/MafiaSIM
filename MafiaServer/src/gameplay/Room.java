@@ -29,6 +29,9 @@ import rolling.Psychologist;
 /**
  *
  * @author mohammadreza
+ * In this class we build
+ * the room and manage all 
+ * the related operations
  */
 public class Room implements Runnable {
 

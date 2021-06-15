@@ -19,9 +19,13 @@ import java.util.logging.Logger;
 public class MafiaServer {
 
 	/**
-	 * @param args the command line arguments
+	 * In this class where
+	 * the main method is located,
+	 * we connected to the clients
+	 * @param args
 	 */
 	public static void main(String[] args) {
+		// create server socket and connect to clients
 		ServerSocket serverSocket;
 		try {
 			serverSocket = new ServerSocket(8080);

@@ -10,6 +10,7 @@ import Player.Player;
 /**
  *
  * @author mohammadreza
+ * in this class we build thread for psychologist
  */
 public class Psychologist extends Citizen {
 	
