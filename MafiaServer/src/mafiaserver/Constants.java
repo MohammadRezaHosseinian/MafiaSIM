@@ -80,4 +80,6 @@ public class Constants {
 	public static final String MSG_NOBODY_KILLED = "[+] nobody killed in voting!";
 	public static final String MSG_PHASE_TIME = " time from this phase is %d min";
 	public static final String MSG_PHASE_TIME_FOR_CITIZEN = " time from this phase is %d seconds";
+	public static final String MSG_EQUAL_MAX_VOTES = "[!] Beacuseof equal max votes, nobody leaves room!";
+	public static final String MSG_MAYOR_ACT = "[!] Mayor wakeup you have %d second.";
 }

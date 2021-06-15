@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mafiaserver.Constants;
@@ -28,10 +27,7 @@ import rolling.Psychologist;
 
 /**
  *
- * @author mohammadreza
- * In this class we build
- * the room and manage all 
- * the related operations
+ * @author mohammadreza In this class we build the room and manage all the related operations
  */
 public class Room implements Runnable {
 
@@ -79,7 +75,8 @@ public class Room implements Runnable {
 			try {
 				dos.writeUTF(Constants.MSG_ROOM_IS_FULL);
 			} catch (IOException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> addPlayer");
 			}
 			return false;
 		}
@@ -89,7 +86,8 @@ public class Room implements Runnable {
 				try {
 					dos.writeUTF(Constants.MSG_BAD_USERNAME);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+					System.out.format(" Oops the connection is closed!:\n");
+					System.out.format("in gameplay.room -> addPlayer");
 				}
 				return false;
 			}
@@ -100,7 +98,8 @@ public class Room implements Runnable {
 		try {
 			p.getStream().writeUTF(String.format(Constants.MSG_JOINED_SUCCESSFULLY, this.name));
 		} catch (IOException ex) {
-			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\n");
+			System.out.format("in gameplay.room -> addPlayer");
 		}
 		return true;
 	}
@@ -129,10 +128,6 @@ public class Room implements Runnable {
 		return this.players.size() == this.playersCount;
 	}
 
-	public void shuffliseRoll() {
-
-	}
-
 	public void handleReq(DataOutputStream dos, String cmd, String arg) {
 		System.out.println("----> " + cmd + "   //" + arg);
 		switch (cmd) {
@@ -146,7 +141,8 @@ public class Room implements Runnable {
 					try {
 						p.getStream().writeUTF(Constants.MSG_READY_RESPONSE);
 					} catch (IOException ex) {
-						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+						System.out.format(" Oops the connection is closed!:\n");
+						System.out.format("in gameplay.room -> first hanleReq");
 					}
 				}
 				break;
@@ -169,7 +165,8 @@ public class Room implements Runnable {
 					try {
 						p.getStream().writeUTF("you can't chat at this time");
 					} catch (IOException ex) {
-						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+						System.out.format(" Oops the connection is closed!:\n");
+						System.out.format("in gameplay.room -> second hanleReq");
 					}
 				}
 				break;
@@ -182,7 +179,8 @@ public class Room implements Runnable {
 					try {
 						player.getStream().writeUTF(Constants.MSG_CANT_VOTE);
 					} catch (IOException ex) {
-						Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+						System.out.format(" Oops the connection is closed!:\n");
+						System.out.format("in gameplay.room -> first hanleReq");
 					}
 				}
 				int chairNumber = Integer.parseInt(arg2);
@@ -200,7 +198,7 @@ public class Room implements Runnable {
 					}
 					break;
 				}
-				if (state == GameState.MAYOR_ACT && player.getRole() instanceof Mayor) {
+				if (player.getRole() instanceof Mayor && state == GameState.MAYOR_ACT) {
 					if (votedPlayer != null) {
 						this.mayorCanceledVotting = true;
 					} else {
@@ -275,7 +273,8 @@ public class Room implements Runnable {
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> run");
 			}
 		}
 		this.assignRoles();
@@ -318,7 +317,8 @@ public class Room implements Runnable {
 			broadcastMessage(String.format(Constants.MSG_PHASE_TIME, Constants.DAY_TIME));
 			Thread.sleep(Constants.DAY_TIME * Constants.MIN_TO_MILISECOND);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\n");
+			System.out.format("in gameplay.room -> dayPhase");
 		}
 		setCanSpeekPlayers(false);
 		this.broadcastMessage(Constants.MSG_END_OF_DAY);
@@ -358,12 +358,13 @@ public class Room implements Runnable {
 			broadcastMessage(String.format(Constants.MSG_PHASE_TIME, Constants.VOTING_TIME));
 			Thread.sleep(Constants.VOTING_TIME * Constants.MIN_TO_MILISECOND);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\n");
+			System.out.format("in gameplay.room -> votePhase");
 		}
 
 		this.broadcastMessage(Constants.MSG_END_OF_VOTING);
 		this.killByVoting();
-		
+
 		this.vottingSystem.clear();
 		this.setPlayerCanVote(false);
 		state = GameState.INTER_STATES_PHASE;
@@ -389,21 +390,24 @@ public class Room implements Runnable {
 		int quorum = (int) 0.5 * this.alivePlayersCount();
 
 		int maxVote = sortedVotes.get(sortedVotes.size() - 1);
-		System.out.println("quorum : "+quorum);
-		System.out.println("maxVote  :"+maxVote);
-		if (maxVote != sortedVotes.get(sortedVotes.size() - 2)) {
-			if (maxVote >= quorum) {
-				for (Player player : vottingSystem.keySet()) {
-					if (vottingSystem.get(player) == maxVote) {
-						player.kill();
-						this.killedByVottingPlayer = player;
-						this.broadcastMessage("At this stage,"
-								+ player.getUsername() + " leaves the game");
-						return;
-					}
+		System.out.println("quorum : " + quorum);
+		System.out.println("maxVote  :" + maxVote);
+		if (sortedVotes.size() >= 2 && maxVote == sortedVotes.get(sortedVotes.size() - 2)) {
+			this.broadcastMessage(Constants.MSG_EQUAL_MAX_VOTES);
+			return;
+		}
+		if (maxVote >= quorum) {
+			for (Player player : vottingSystem.keySet()) {
+				if (vottingSystem.get(player) == maxVote) {
+					player.kill();
+					this.killedByVottingPlayer = player;
+					this.broadcastMessage("At this stage,"
+							+ player.getUsername() + " leaves the game");
+					return;
 				}
 			}
 		}
+
 		this.broadcastMessage(Constants.MSG_WHITOUT_KILL_IN_VOTTING);
 	}
 
@@ -434,7 +438,8 @@ public class Room implements Runnable {
 			broadcastMessage(String.format(Constants.MSG_PHASE_TIME, Constants.MAFIA_TURN_TIME));
 			Thread.sleep(Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\n");
+			System.out.format("in gameplay.room -> mafiaNightPhase");
 		}
 
 		this.setMafiaCanVote(false);
@@ -456,7 +461,8 @@ public class Room implements Runnable {
 				broadcastMessage(String.format(Constants.MSG_PHASE_TIME_FOR_CITIZEN, Constants.CITIZEN_TIME));
 				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> doctorNightPhase");
 			}
 			doctor.setCanVote(false);
 			this.broadcastMessage(Constants.MSG_DOCTOR_SLEEP);
@@ -477,7 +483,8 @@ public class Room implements Runnable {
 				broadcastMessage(String.format(Constants.MSG_PHASE_TIME_FOR_CITIZEN, Constants.CITIZEN_TIME));
 				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> dieHardPhase");
 			}
 
 			dieHard.setCanVote(false);
@@ -499,7 +506,8 @@ public class Room implements Runnable {
 				broadcastMessage(String.format(Constants.MSG_PHASE_TIME_FOR_CITIZEN, Constants.CITIZEN_TIME));
 				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> professionalNightPhase");
 			}
 
 			professional.setCanVote(false);
@@ -522,7 +530,8 @@ public class Room implements Runnable {
 				broadcastMessage(String.format(Constants.MSG_PHASE_TIME_FOR_CITIZEN, Constants.CITIZEN_TIME));
 				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> detectiveNightPhase");
 			}
 			detective.setCanVote(false);
 		}
@@ -543,7 +552,8 @@ public class Room implements Runnable {
 				broadcastMessage(String.format(Constants.MSG_PHASE_TIME_FOR_CITIZEN, Constants.CITIZEN_TIME));
 				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\n");
+				System.out.format("in gameplay.room -> psychologistNightPhase");
 			}
 			psychologist.setCanVote(false);
 		}
@@ -620,8 +630,7 @@ public class Room implements Runnable {
 				try {
 					player.getStream().writeUTF(msg);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class
-							.getName()).log(Level.SEVERE, null, ex);
+					System.out.format(" Oops the connection is closed!:\nin gameplay.room -> mafiaBroadcast");
 				}
 			}
 		}
@@ -720,22 +729,19 @@ public class Room implements Runnable {
 				this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				return;
 			} catch (IOException ex) {
-				Logger.getLogger(Room.class
-						.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\nin gameplay.room -> detectiveVoteNight");
 			}
 			if (votedPlayer.getRole() instanceof Citizen) {
 				try {
 					this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_NOT_MAFIA);
 				} catch (IOException ex) {
-					Logger.getLogger(Room.class
-							.getName()).log(Level.SEVERE, null, ex);
+					System.out.format(" Oops the connection is closed!:\nin gameplay.room -> detectiveVoteNight");
 				}
 				if (votedPlayer.getRole() instanceof Mafia) {
 					try {
 						this.getDetective().getStream().writeUTF(Constants.MSG_PLAYER_IS_MAFIA);
 					} catch (IOException ex) {
-						Logger.getLogger(Room.class
-								.getName()).log(Level.SEVERE, null, ex);
+						System.out.format(" Oops the connection is closed!:\nin gameplay.room -> detectiveVoteNight");
 					}
 				}
 			}
@@ -775,8 +781,7 @@ public class Room implements Runnable {
 			}
 			mafiaPlayer.getStream().writeUTF(String.format(Constants.MSG_YOU_CANT_SHOOT, shooter.getUsername()));
 		} catch (IOException ex) {
-			Logger.getLogger(Room.class
-					.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin gameplay.room -> mafiaVoteNight");
 		}
 	}
 
@@ -798,9 +803,20 @@ public class Room implements Runnable {
 	}
 
 	private void mayorAct() {
+		this.state = GameState.MAYOR_ACT;
 		Mayor mayorRole = (Mayor) this.getMayor().getRole();
-		if (this.mayorCanceledVotting) {
+		try {
 			if (mayorRole.canCancelVotting()) {
+				this.broadcastMessage(String.format(Constants.MSG_MAYOR_ACT, Constants.CITIZEN_TIME));
+				Thread.sleep(Constants.CITIZEN_TIME * Constants.SECOND_TO_MILISECOND);
+			}
+		} catch (InterruptedException ex) {
+			System.out.format(" Oops the connection is closed!:\nin gameplay.room -> mayorAct");
+		}
+
+		if (this.mayorCanceledVotting) {
+			if (mayorRole.cancelVotting()) {
+
 				this.killedByVottingPlayer.setIsAlive(true);
 			}
 		}
@@ -860,8 +876,7 @@ public class Room implements Runnable {
 			try {
 				player.getStream().writeUTF(String.format(Constants.MSG_ASSIGN_ROLE_FOR_PLAYER, player.getUsername(), player.getRole().getRole()));
 			} catch (IOException ex) {
-				Logger.getLogger(Room.class
-						.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\nin gameplay.room -> assignRoles");
 			}
 		}
 	}
@@ -878,7 +893,7 @@ public class Room implements Runnable {
 	private void showTest() {
 		for (Player player : vottingSystem.keySet()) {
 			System.out.println("------------------");
-			System.out.println("[---] "+player.getUsername() + " has "+ vottingSystem.get(player)+" votes");
+			System.out.println("[---] " + player.getUsername() + " has " + vottingSystem.get(player) + " votes");
 		}
 	}
 }

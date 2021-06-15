@@ -9,8 +9,6 @@ import gameplay.RoomHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -43,7 +41,7 @@ public class MafiaServer {
 			}
 
 		} catch (IOException ex) {
-			Logger.getLogger(MafiaServer.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.MafiaServer -> main");
 		}
 	}
 

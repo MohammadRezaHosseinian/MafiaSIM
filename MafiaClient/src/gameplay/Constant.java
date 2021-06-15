@@ -27,5 +27,6 @@ public class Constant {
 	public static final String MSG_WRONG_CHOICE = "[-] Invalid input!";
 	public static final String MSG_INPUT_ROOM_NAME = "[+] Please enter unique room name ";
 	public static final String MSG_INPUT_ROOM_SIZE = "[+] Please enter room size, great than 10:";
+	public static final String ROUTE_CHANGE_USERNAME = "change-username";
 
 }

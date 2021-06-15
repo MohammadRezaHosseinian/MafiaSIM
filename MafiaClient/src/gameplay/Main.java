@@ -21,6 +21,7 @@ public class Main {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
+		System.out.println("[+] Please enter your username");
 		Scanner inputScanner = new Scanner(System.in);
 		String username = inputScanner.next();
 		Handler clientHandler = new Handler(Constant.SERVER_HOST, Constant.SERVER_PORT, username);

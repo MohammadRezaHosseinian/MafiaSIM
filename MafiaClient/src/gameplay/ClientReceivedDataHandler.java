@@ -7,13 +7,10 @@ package gameplay;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author mohammadreza
- * in this class client read server message
+ * @author mohammadreza in this class client read server message
  */
 public class ClientReceivedDataHandler implements Runnable {
 
@@ -35,7 +32,8 @@ public class ClientReceivedDataHandler implements Runnable {
 				System.out.println(String.format("[+] new message from server:\t%s", receivedData));
 				this.handler.setGameState(GameState.SHOW_MENU_STATE);
 			} catch (IOException ex) {
-				Logger.getLogger(ClientReceivedDataHandler.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientReceivedDataHandler -> run");
+
 			}
 		}
 	}

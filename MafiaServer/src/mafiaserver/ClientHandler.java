@@ -11,15 +11,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author mohammadreza
- * In this class, we handle some problems
+ * @author mohammadreza In this class, we handle some problems
  */
-
 public class ClientHandler implements Runnable {
 
 	private final Socket connection;
@@ -34,7 +30,7 @@ public class ClientHandler implements Runnable {
 			dos = new DataOutputStream(this.connection.getOutputStream());
 			dis = new DataInputStream(this.connection.getInputStream());
 		} catch (IOException ex) {
-			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> Constructor");
 		}
 	}
 
@@ -43,7 +39,7 @@ public class ClientHandler implements Runnable {
 		this.serv();
 	}
 // read requests of clients
-	
+
 	private void serv() {
 		String request;
 		while (true) {
@@ -58,7 +54,7 @@ public class ClientHandler implements Runnable {
 		}
 	}
 //  Responds to client commands
-	
+
 	private void parseRequest(String request) {
 		String username, roomname, cmd;
 		String[] spliteReq = request.split("/");
@@ -85,9 +81,8 @@ public class ClientHandler implements Runnable {
 					Room room = this.roomHandler.getRoomByName(roomname);
 					if (room != null) {
 						room.handleReq(this.dos, spliteReq[0], spliteReq[2]);
-					}
-					else{
-						System.out.println("no room with name: "+spliteReq[1]);
+					} else {
+						System.out.println("no room with name: " + spliteReq[1]);
 						this.roomHandler.showRooms();
 					}
 				} else {
@@ -111,7 +106,7 @@ public class ClientHandler implements Runnable {
 
 	}
 // if client want to create room this method response to this request
-	
+
 	private void createRoomCmd(String roomname, String roomSize) {
 		System.out.println("Create Room : " + roomname);
 		int playersCount = 10;
@@ -122,7 +117,8 @@ public class ClientHandler implements Runnable {
 			System.out.format("[-] Oops , can't parse %s as int", roomSize);
 			return;
 		} catch (IOException ex) {
-			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> createRoomCmd");
+
 		}
 
 		this.roomHandler.addRoom(roomname, playersCount);
@@ -131,44 +127,45 @@ public class ClientHandler implements Runnable {
 	}
 
 // if client want to see list of rooms this method response to this request
-	
 	private void roomListCmd() {
 		try {
 			System.out.println("[+] rooms list cmd func: ");
 			this.dos.writeUTF(Utils.listRooms(this.roomHandler.getRooms()));
 		} catch (IOException ex) {
-			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> roomListCmd");
+
 		}
 	}
 
 // if client want to see list of all users this method response to this request
-	
 	private void allUserListCmd() {
 		System.out.println("[+] users list cmd func: ");
 
 		try {
 			this.dos.writeUTF(Utils.listAllUser(this.roomHandler.getRooms()));
 		} catch (IOException ex) {
-			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> allUserListCmd");
+
 		}
 	}
 
 // if client want to see list of users in one room this method response to this request
-	
 	private void roomUsersListCmd(String roomName) {
 		Room room = this.roomHandler.getRoomByName(roomName);
 		if (room != null) {
 			try {
 				this.dos.writeUTF(Utils.listRoomUser(room));
 			} catch (IOException ex) {
-				Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> roomUseListCmd");
+
 			}
 			return;
 		}
 		try {
 			this.dos.writeUTF(String.format(Constants.MSG_BAD_ROOM_NAME_ERRORE, roomName, Constants.ROUTE_LIST_ROOMS));
 		} catch (IOException ex) {
-			Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the connection is closed!:\nin mafiaserver.ClientHandler -> roomUseListCmd");
+
 		}
 
 	}

@@ -9,22 +9,18 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author mohammadreza
- * In this class we created 
- * the user connection to the 
- * server by displaying the menu
+ * @author mohammadreza In this class we created the user connection to the server by displaying the menu
  */
 public class ClientCommandHandler implements Runnable {
 
 	private final BufferedReader inputReader;
 	private final DataOutputStream dos;
-	private final Handler handler;
+	private Handler handler;
 	private final Scanner input;
 	private String roomName;
 
@@ -35,6 +31,7 @@ public class ClientCommandHandler implements Runnable {
 		this.inputReader = new BufferedReader(new InputStreamReader(System.in));
 		this.input = new Scanner(System.in);
 	}
+
 	// this method shows menu
 	public void showMenu() {
 		System.out.println("[CR] : " + Constant.ROUTE_CREATE_ROOM);
@@ -45,6 +42,7 @@ public class ClientCommandHandler implements Runnable {
 		System.out.println("[RR] : " + Constant.ROUTE_READY_PALYER);
 		System.out.println("[CH] : " + Constant.ROUTE_CHAT);
 		System.out.println("[VU] : " + Constant.ROUTE_VOTE);
+		System.out.println("[CU] : " + Constant.ROUTE_CHANGE_USERNAME);
 		System.out.println("[EX] : " + Constant.EXIT);
 
 	}
@@ -57,6 +55,7 @@ public class ClientCommandHandler implements Runnable {
 		}
 
 	}
+
 	// by this method user make own choice
 	private void menu() {
 		this.showMenu();
@@ -93,8 +92,12 @@ public class ClientCommandHandler implements Runnable {
 			case "vu":
 				this.voteToUserCmd();
 				break;
+			case "cu":
+				this.changeUsernameCmd();
+				break;
 			case "ex":
-				return;
+				System.exit(0);
+				break;
 			default:
 				System.out.println(Constant.MSG_WRONG_CHOICE);
 		}
@@ -105,12 +108,15 @@ public class ClientCommandHandler implements Runnable {
 		System.out.println(Constant.MSG_INPUT_ROOM_NAME);
 		String roomname = input.next();
 		System.out.println(Constant.MSG_INPUT_ROOM_SIZE);
-		int roomSize = input.nextInt();
-		String request = String.format("%s/%s/%d", Constant.ROUTE_CREATE_ROOM, roomname, roomSize);
+
 		try {
+			int roomSize = input.nextInt();
+			String request = String.format("%s/%s/%d", Constant.ROUTE_CREATE_ROOM, roomname, roomSize);
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> createRoomCmd");
+		} catch (InputMismatchException ex) {
+			System.out.println("Oops, please insert an integer number!");
 		}
 	}
 
@@ -122,7 +128,8 @@ public class ClientCommandHandler implements Runnable {
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> joinRoomCmd");
+
 		}
 	}
 
@@ -132,7 +139,8 @@ public class ClientCommandHandler implements Runnable {
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> readyRequestCmd");
+
 		}
 	}
 
@@ -142,7 +150,7 @@ public class ClientCommandHandler implements Runnable {
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> listRoomCmd");
 		}
 	}
 
@@ -152,7 +160,7 @@ public class ClientCommandHandler implements Runnable {
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> listUseInRoomCmd");
 		}
 	}
 
@@ -162,7 +170,7 @@ public class ClientCommandHandler implements Runnable {
 		try {
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> listAllUserCmd");
 		}
 	}
 
@@ -174,7 +182,7 @@ public class ClientCommandHandler implements Runnable {
 			String request = String.format("%s/%s/%s/%s", this.roomName, Constant.ROUTE_CHAT, this.handler.getUsername(), chatMessage);
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> chatCmd");
 		}
 	}
 
@@ -187,10 +195,22 @@ public class ClientCommandHandler implements Runnable {
 			String request = String.format("%s/%s/%s/%d", this.roomName, Constant.ROUTE_VOTE, this.handler.getUsername(), voteNumber);
 			this.dos.writeUTF(request);
 		} catch (IOException ex) {
-			Logger.getLogger(ClientCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
-		}catch(Exception ex){
-			
+			System.out.format(" Oops the server connection is closed!:\nin gameplay.ClientCommandHandler -> voteToUserCmd");
+		} catch (Exception ex) {
+			System.out.println("[-] Wrong vote you can vote again");
 		}
+	}
+
+	private void changeUsernameCmd() {
+		System.out.println("[!] You can change your name when you are not in a room ");
+		if (this.roomName != null) {
+			System.out.println("[!] you can't change username because you join in room: " + this.roomName);
+			return;
+		}
+		System.out.println("[+] please enter your new username:");
+		String newUsername = this.input.next();
+		this.handler.setUserName(newUsername);
+
 	}
 
 }
