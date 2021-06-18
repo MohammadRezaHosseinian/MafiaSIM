@@ -29,11 +29,9 @@ public class Mayor extends Citizen{
 		return false;
 	}
 	
-	public boolean cancelVotting(){
-		if(this.cancelVotting > 0){
+	public void cancelVotting(){
+		if(this.canCancelVotting()){
 			this.cancelVotting--;
-			return true;
 		}
-		return false;
 	}
 }

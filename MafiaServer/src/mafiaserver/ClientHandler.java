@@ -11,6 +11,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -84,6 +86,11 @@ public class ClientHandler implements Runnable {
 					} else {
 						System.out.println("no room with name: " + spliteReq[1]);
 						this.roomHandler.showRooms();
+						try {
+							this.dos.writeUTF("[-] bad room name! please use lr cmd to show list of rooms!");
+						} catch (IOException ex) {
+							Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+						}
 					}
 				} else {
 					roomname = spliteReq[0];
@@ -112,7 +119,11 @@ public class ClientHandler implements Runnable {
 		int playersCount = 10;
 		try {
 			playersCount = Integer.parseInt(roomSize);
-			this.dos.writeUTF("ok");
+			if(playersCount < 10){
+				this.dos.writeUTF("[-] room size must be greate than 10");
+				return;
+			}
+			this.dos.writeUTF("ok, room with name : "+roomname +" and size : "+roomSize + " is created!");
 		} catch (NumberFormatException e) {
 			System.out.format("[-] Oops , can't parse %s as int", roomSize);
 			return;

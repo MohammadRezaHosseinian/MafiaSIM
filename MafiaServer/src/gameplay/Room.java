@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mafiaserver.Constants;
 import rolling.Citizen;
 import rolling.Detective;
@@ -433,7 +431,8 @@ public class Room implements Runnable {
 		}
 
 		broadcastMessage(Constants.MSG_MAFIA_NIGHT_PHASE);
-		setMafiaCanVote(true);
+		setMafiaCanVoteAndChat(true);
+		setMafiaCanSpeek(true);
 		try {
 			broadcastMessage(String.format(Constants.MSG_PHASE_TIME, Constants.MAFIA_TURN_TIME));
 			Thread.sleep(Constants.MAFIA_TURN_TIME * Constants.MIN_TO_MILISECOND);
@@ -442,7 +441,7 @@ public class Room implements Runnable {
 			System.out.format("in gameplay.room -> mafiaNightPhase");
 		}
 
-		this.setMafiaCanVote(false);
+		this.setMafiaCanVoteAndChat(false);
 		this.setMafiaCanSpeek(false);
 		this.broadcastMessage(Constants.MSG_MAFIA_END_NIGHT);
 		state = GameState.INTER_STATES_PHASE;
@@ -587,9 +586,10 @@ public class Room implements Runnable {
 		}
 	}
 
-	private void setMafiaCanVote(boolean b) {
+	private void setMafiaCanVoteAndChat(boolean b) {
 		for (Player player : players) {
-			if (player.getRole() instanceof Mafia) {
+			if (player.getRole() instanceof Mafia && player.getIsAlive()) {
+				player.setCanSpeak(b);
 				player.setCanVote(b);
 			}
 		}
@@ -816,11 +816,9 @@ public class Room implements Runnable {
 			System.out.format(" Oops the connection is closed!:\nin gameplay.room -> mayorAct");
 		}
 
-		if (this.mayorCanceledVotting) {
-			if (mayorRole.cancelVotting()) {
-
-				this.killedByVottingPlayer.setIsAlive(true);
-			}
+		if (this.mayorCanceledVotting && mayorRole.canCancelVotting()) {
+			mayorRole.cancelVotting();
+			this.killedByVottingPlayer.setIsAlive(true);
 		}
 		this.killedByVottingPlayer = null;
 		this.mayorCanceledVotting = false;
