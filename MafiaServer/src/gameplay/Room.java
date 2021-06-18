@@ -803,6 +803,8 @@ public class Room implements Runnable {
 	}
 
 	private void mayorAct() {
+		Player mayor = getMayor();
+		mayor.setCanVote(true);
 		this.state = GameState.MAYOR_ACT;
 		Mayor mayorRole = (Mayor) this.getMayor().getRole();
 		try {
@@ -822,6 +824,7 @@ public class Room implements Runnable {
 		}
 		this.killedByVottingPlayer = null;
 		this.mayorCanceledVotting = false;
+		mayor.setCanVote(false);
 	}
 
 	private void doctorLecterAct(Player votedPlayer) {
